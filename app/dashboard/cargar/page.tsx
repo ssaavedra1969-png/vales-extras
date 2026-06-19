@@ -4,6 +4,8 @@ import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
 import { pdf } from '@react-pdf/renderer';
+import { doc, runTransaction, collection, addDoc, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 import ValeTemplate from '@/components/vale/ValeTemplate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -12,7 +14,6 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { Upload, FileSpreadsheet, Download, AlertCircle, CheckCircle2, X, Loader2 } from 'lucide-react';
 import { ExcelRow, ConfigEmpresa, Vale } from '@/types';
-import { Timestamp } from 'firebase/firestore';
 import { format, parse } from 'date-fns';
 import JSZip from 'jszip';
 
@@ -70,6 +71,32 @@ function parseExcelFile(buffer: ArrayBuffer): {
   }
 
   return { filasValidas, filasInvalidas };
+}
+
+async function generarNumeroVale(): Promise<string> {
+  const counterRef = doc(db, 'contadores', 'vale_counter');
+
+  const nuevoNumero = await runTransaction(db, async (transaction) => {
+    const counterDoc = await transaction.get(counterRef);
+    let ultimoNumero = 0;
+
+    if (!counterDoc.exists()) {
+      transaction.set(counterRef, { ultimoNumero: 0 });
+    } else {
+      ultimoNumero = counterDoc.data()?.ultimoNumero ?? 0;
+    }
+
+    const siguiente = ultimoNumero + 1;
+    transaction.update(counterRef, { ultimoNumero: siguiente });
+    return siguiente;
+  });
+
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const correlativo = String(nuevoNumero).padStart(5, '0');
+
+  return `FALPAT-${year}-${month}-${correlativo}`;
 }
 
 export default function CargarPage() {
@@ -131,27 +158,35 @@ export default function CargarPage() {
     setCargando(true);
 
     try {
-      const uploadRes = await fetch('/api/upload', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ filas: filasValidas }),
-      });
+      const valesRef = collection(db, 'vales');
+      const valesConFechas: { id: string; numero: string; empleado: string; monto: number; fechaPago: string }[] = [];
 
-      if (!uploadRes.ok) throw new Error('Error al crear vales');
-      const uploadData = await uploadRes.json();
+      for (const fila of filasValidas) {
+        const numero = await generarNumeroVale();
+        const docRef = await addDoc(valesRef, {
+          numero,
+          empleado: fila.empleado,
+          monto: fila.monto,
+          fechaPago: fila.fechaPago,
+          fechaGeneracion: Timestamp.now(),
+          estado: 'pendiente',
+          mesDescuento: '',
+        });
 
-      const valesConFechas = uploadData.vales.map(
-        (v: { id: string; numero: string; empleado: string; monto: number }, i: number) => ({
-          ...v,
-          fechaPago: filasValidas[i]?.fechaPago || '',
-        })
-      );
+        valesConFechas.push({
+          id: docRef.id,
+          numero,
+          empleado: fila.empleado,
+          monto: fila.monto,
+          fechaPago: fila.fechaPago,
+        });
+      }
 
       setValesCreados(valesConFechas);
 
       toast({
         title: 'Vales creados',
-        description: `${uploadData.vales.length} vales generados`,
+        description: `${valesConFechas.length} vales generados`,
         variant: 'success',
       });
 
@@ -177,7 +212,7 @@ export default function CargarPage() {
           zip.file(`vale_${vale.numero}.pdf`, pdfBlob);
           pdfsOk++;
         } catch (pdfError) {
-          console.error(`Error generando PDF para ${vale.numero}:`, pdfError);
+          console.error(`Error en PDF para ${vale.numero}:`, pdfError);
         }
       }
 
@@ -250,9 +285,7 @@ export default function CargarPage() {
               <CardDescription>
                 <span className="text-green-600 font-medium">{filasValidas.length} válidas</span>
                 {filasInvalidas.length > 0 && (
-                  <span className="text-red-600 font-medium ml-2">
-                    {filasInvalidas.length} con errores
-                  </span>
+                  <span className="text-red-600 font-medium ml-2">{filasInvalidas.length} con errores</span>
                 )}
               </CardDescription>
             </div>
@@ -282,7 +315,7 @@ export default function CargarPage() {
                 <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
                 <div className="text-sm text-green-800 dark:text-green-200">
                   <strong>{valesCreados.length} vales creados.</strong> Los PDFs se descargaron en un ZIP.
-                  Puedes ver los vales desde el <strong>Historial</strong>.
+                  Podés ver los vales desde el <strong>Historial</strong>.
                 </div>
               </div>
             )}
@@ -342,9 +375,7 @@ export default function CargarPage() {
                           <TableCell>{fila.empleado || '(vacío)'}</TableCell>
                           <TableCell>{fila.monto || '-'}</TableCell>
                           <TableCell>{fila.fechaPago || '-'}</TableCell>
-                          <TableCell>
-                            <Badge variant="destructive" className="text-xs">{fila.error}</Badge>
-                          </TableCell>
+                          <TableCell><Badge variant="destructive" className="text-xs">{fila.error}</Badge></TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
