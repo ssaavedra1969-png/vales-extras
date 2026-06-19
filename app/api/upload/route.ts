@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
           if (!counterDoc.exists) {
             transaction.set(counterRef, { ultimoNumero: 0 });
           } else {
-            ultimoNumero = counterDoc.data().ultimoNumero;
+            ultimoNumero = counterDoc.data()?.ultimoNumero ?? 0;
           }
 
           const siguiente = ultimoNumero + 1;

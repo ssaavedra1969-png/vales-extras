@@ -11,7 +11,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { Upload, FileSpreadsheet, Download, AlertCircle, CheckCircle2, X, Loader2 } from 'lucide-react';
-import { ExcelRow, ConfigEmpresa } from '@/types';
+import { ExcelRow, ConfigEmpresa, Vale } from '@/types';
+import { Timestamp } from 'firebase/firestore';
 import { format, parse } from 'date-fns';
 import JSZip from 'jszip';
 
@@ -22,13 +23,13 @@ function parseExcelFile(buffer: ArrayBuffer): {
   const workbook = XLSX.read(buffer, { type: 'array' });
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
-  const rawData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, { header: 1 });
+  const rawData = XLSX.utils.sheet_to_json<unknown[]>(worksheet, { header: 1 });
 
   const filasValidas: ExcelRow[] = [];
   const filasInvalidas: ExcelRow[] = [];
 
   for (let i = 0; i < rawData.length; i++) {
-    const row = rawData[i] as unknown[];
+    const row = rawData[i];
     if (!row || row.length < 3) continue;
 
     const empleado = String(row[0] || '').trim();
@@ -162,13 +163,14 @@ export default function CargarPage() {
 
       for (const vale of valesConFechas) {
         try {
-          const valeData = {
+          const valeData: Vale = {
             id: vale.id,
             numero: vale.numero,
             empleado: vale.empleado,
             monto: vale.monto,
             fechaPago: vale.fechaPago,
-            estado: 'pendiente' as const,
+            estado: 'pendiente',
+            fechaGeneracion: new Timestamp(Math.floor(Date.now() / 1000), 0),
           };
 
           const pdfBlob = await pdf(<ValeTemplate vale={valeData} config={config} />).toBlob();

@@ -9,7 +9,7 @@ export function parseExcelFile(buffer: ArrayBuffer): {
   const workbook = XLSX.read(buffer, { type: 'array' });
   const sheetName = workbook.SheetNames[0];
   const worksheet = workbook.Sheets[sheetName];
-  const rawData = XLSX.utils.sheet_to_json<Record<string, unknown>>(
+  const rawData = XLSX.utils.sheet_to_json<unknown[]>(
     worksheet,
     { header: 1 }
   );
@@ -18,7 +18,7 @@ export function parseExcelFile(buffer: ArrayBuffer): {
   const filasInvalidas: ExcelRow[] = [];
 
   for (let i = 0; i < rawData.length; i++) {
-    const row = rawData[i] as unknown[];
+    const row = rawData[i];
     if (!row || row.length < 3) continue;
 
     const empleado = String(row[0] || '').trim();

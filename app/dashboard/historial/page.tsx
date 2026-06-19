@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useToast } from '@/components/ui/use-toast';
 import { Search, ChevronLeft, ChevronRight, FileDown, Loader2 } from 'lucide-react';
 import { Vale, ConfigEmpresa } from '@/types';
-import { collection, query, orderBy, limit, getDocs, where, getCountFromServer } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs, where, getCountFromServer, Timestamp, QueryConstraint } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 import { updateValeEstado } from '@/lib/firebase/firestore';
 import {
@@ -52,7 +52,7 @@ export default function HistorialPage() {
   const cargarVales = useCallback(async () => {
     setCargando(true);
     try {
-      const constraints: unknown[] = [orderBy('numero', 'desc')];
+      const constraints: QueryConstraint[] = [orderBy('numero', 'desc')];
       if (filterEstado !== 'todos') {
         constraints.push(where('estado', '==', filterEstado));
       }
@@ -128,16 +128,11 @@ export default function HistorialPage() {
       const configRes = await fetch('/api/config');
       const config: ConfigEmpresa = await configRes.json();
 
-      const valeData = {
-        id: vale.id,
-        numero: vale.numero,
-        empleado: vale.empleado,
-        monto: vale.monto,
-        fechaPago: vale.fechaPago,
-        estado: vale.estado,
-      };
+      if (!vale.fechaGeneracion) {
+        vale.fechaGeneracion = new Timestamp(Math.floor(Date.now() / 1000), 0);
+      }
 
-      const pdfBlob = await pdf(<ValeTemplate vale={valeData} config={config} />).toBlob();
+      const pdfBlob = await pdf(<ValeTemplate vale={vale} config={config} />).toBlob();
       const url = URL.createObjectURL(pdfBlob);
       window.open(url, '_blank');
     } catch {
