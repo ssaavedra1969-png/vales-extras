@@ -1,7 +1,5 @@
-import { initializeApp, getApps } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -12,14 +10,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-let app;
-if (!getApps().length) {
-  app = initializeApp(firebaseConfig);
-} else {
-  app = getApps()[0];
+let app: FirebaseApp | null = null;
+let firestore: Firestore | null = null;
+
+function getApp(): FirebaseApp {
+  if (!app) {
+    if (!firebaseConfig.apiKey) {
+      throw new Error('Firebase API key not configured');
+    }
+    app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  }
+  return app;
 }
 
-export const firebaseAuth = getAuth(app);
-export const db = getFirestore(app);
-export const storageBucket = getStorage(app);
-export default app;
+export function getDb(): Firestore {
+  if (!firestore) {
+    firestore = getFirestore(getApp());
+  }
+  return firestore;
+}
+
+export default getApp;

@@ -10,7 +10,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Download, CheckCircle2, Loader2 } from 'lucide-react';
 import { Vale } from '@/types';
 import { collection, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { getDb } from '@/lib/firebase/config';
 import { updateValeEstado } from '@/lib/firebase/firestore';
 import * as XLSX from 'xlsx';
 
@@ -30,7 +30,7 @@ export default function DescuentosPage() {
     setCargando(true);
     try {
       const q = query(
-        collection(db, 'vales'),
+        collection(getDb(), 'vales'),
         where('estado', '==', 'firmado')
       );
       const snapshot = await getDocs(q);

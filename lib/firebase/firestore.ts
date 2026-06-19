@@ -16,7 +16,7 @@ import {
   QueryDocumentSnapshot,
   DocumentData,
 } from 'firebase/firestore';
-import { db } from './config';
+import { getDb } from './config';
 import { Vale, Contador, ConfigEmpresa } from '@/types';
 
 const VALES_COLLECTION = 'vales';
@@ -25,9 +25,9 @@ const LOGS_COLLECTION = 'logs';
 const CONFIG_COLLECTION = 'config';
 
 export async function getNextValeNumber(): Promise<string> {
-  const counterRef = doc(db, CONTADORES_COLLECTION, 'vale_counter');
+  const counterRef = doc(getDb(), CONTADORES_COLLECTION, 'vale_counter');
 
-  return await runTransaction(db, async (transaction) => {
+  return await runTransaction(getDb(), async (transaction) => {
     const counterDoc = await transaction.get(counterRef);
     let ultimoNumero = 0;
 
@@ -52,7 +52,7 @@ export async function getNextValeNumber(): Promise<string> {
 export async function createVale(
   valeData: Omit<Vale, 'id' | 'fechaGeneracion'>
 ): Promise<string> {
-  const docRef = await addDoc(collection(db, VALES_COLLECTION), {
+  const docRef = await addDoc(collection(getDb(), VALES_COLLECTION), {
     ...valeData,
     fechaGeneracion: Timestamp.now(),
   });
@@ -69,7 +69,7 @@ export async function getVales(options?: {
   lastDoc?: QueryDocumentSnapshot<DocumentData> | null;
 }): Promise<{ vales: Vale[]; total: number; lastDoc: QueryDocumentSnapshot<DocumentData> | null }> {
   const pageSize = options?.pageSize || 20;
-  let q = query(collection(db, VALES_COLLECTION), orderBy('numero', 'desc'));
+  let q = query(collection(getDb(), VALES_COLLECTION), orderBy('numero', 'desc'));
 
   if (options?.estado && options.estado !== 'todos') {
     q = query(q, where('estado', '==', options.estado));
@@ -95,7 +95,7 @@ export async function getVales(options?: {
     ...doc.data(),
   })) as Vale[];
 
-  const totalSnapshot = await getDocs(collection(db, VALES_COLLECTION));
+  const totalSnapshot = await getDocs(collection(getDb(), VALES_COLLECTION));
   const total = totalSnapshot.size;
 
   const lastVisible = snapshot.docs[snapshot.docs.length - 1] || null;
@@ -104,7 +104,7 @@ export async function getVales(options?: {
 }
 
 export async function getValeById(id: string): Promise<Vale | null> {
-  const docRef = doc(db, VALES_COLLECTION, id);
+  const docRef = doc(getDb(), VALES_COLLECTION, id);
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return null;
   return { id: docSnap.id, ...docSnap.data() } as Vale;
@@ -115,14 +115,14 @@ export async function updateValeEstado(
   estado: 'pendiente' | 'firmado' | 'descontado',
   mesDescuento?: string
 ): Promise<void> {
-  const docRef = doc(db, VALES_COLLECTION, id);
+  const docRef = doc(getDb(), VALES_COLLECTION, id);
   const updateData: Record<string, unknown> = { estado };
   if (mesDescuento) updateData.mesDescuento = mesDescuento;
   await updateDoc(docRef, updateData);
 }
 
 export async function deleteVale(id: string): Promise<void> {
-  await deleteDoc(doc(db, VALES_COLLECTION, id));
+  await deleteDoc(doc(getDb(), VALES_COLLECTION, id));
 }
 
 export async function getValesByMes(
@@ -130,7 +130,7 @@ export async function getValesByMes(
   estado: string = 'firmado'
 ): Promise<Vale[]> {
   const q = query(
-    collection(db, VALES_COLLECTION),
+    collection(getDb(), VALES_COLLECTION),
     where('estado', '==', estado),
     orderBy('numero', 'asc')
   );
@@ -146,22 +146,22 @@ export async function getValesByMes(
 }
 
 export async function getConfigEmpresa(): Promise<ConfigEmpresa | null> {
-  const docRef = doc(db, CONFIG_COLLECTION, 'empresa');
+  const docRef = doc(getDb(), CONFIG_COLLECTION, 'empresa');
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) return null;
   return docSnap.data() as ConfigEmpresa;
 }
 
 export async function saveConfigEmpresa(config: ConfigEmpresa): Promise<void> {
-  const docRef = doc(db, CONFIG_COLLECTION, 'empresa');
+  const docRef = doc(getDb(), CONFIG_COLLECTION, 'empresa');
   await updateDoc(docRef, { ...config });
 }
 
 export async function initConfigEmpresa(config: ConfigEmpresa): Promise<void> {
-  const docRef = doc(db, CONFIG_COLLECTION, 'empresa');
+  const docRef = doc(getDb(), CONFIG_COLLECTION, 'empresa');
   const docSnap = await getDoc(docRef);
   if (!docSnap.exists()) {
-    await addDoc(collection(db, CONFIG_COLLECTION), { ...config });
+    await addDoc(collection(getDb(), CONFIG_COLLECTION), { ...config });
   }
 }
 
@@ -170,7 +170,7 @@ export async function addLog(
   mensaje: string,
   datos?: unknown
 ): Promise<void> {
-  await addDoc(collection(db, LOGS_COLLECTION), {
+  await addDoc(collection(getDb(), LOGS_COLLECTION), {
     timestamp: Timestamp.now(),
     tipo,
     mensaje,

@@ -13,7 +13,7 @@ import { useToast } from '@/components/ui/use-toast';
 import { Search, ChevronLeft, ChevronRight, FileDown, Loader2 } from 'lucide-react';
 import { Vale, ConfigEmpresa } from '@/types';
 import { collection, query, orderBy, limit, getDocs, where, getCountFromServer, Timestamp, QueryConstraint } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { getDb } from '@/lib/firebase/config';
 import { updateValeEstado } from '@/lib/firebase/firestore';
 import {
   Dialog,
@@ -63,13 +63,13 @@ export default function HistorialPage() {
         );
       }
 
-      const q = query(collection(db, 'vales'), ...constraints, limit(ITEMS_PER_PAGE));
+      const q = query(collection(getDb(), 'vales'), ...constraints, limit(ITEMS_PER_PAGE));
       const snapshot = await getDocs(q);
       const valesData = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Vale));
       setVales(valesData);
       setPagina(1);
 
-      const countSnapshot = await getCountFromServer(collection(db, 'vales'));
+      const countSnapshot = await getCountFromServer(collection(getDb(), 'vales'));
       setTotal(countSnapshot.data().count);
     } catch (error) {
       console.error('Error:', error);

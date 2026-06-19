@@ -5,7 +5,7 @@ import { useDropzone } from 'react-dropzone';
 import * as XLSX from 'xlsx';
 import { pdf } from '@react-pdf/renderer';
 import { doc, runTransaction, collection, addDoc, Timestamp } from 'firebase/firestore';
-import { db } from '@/lib/firebase/config';
+import { getDb } from '@/lib/firebase/config';
 import ValeTemplate from '@/components/vale/ValeTemplate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -74,9 +74,9 @@ function parseExcelFile(buffer: ArrayBuffer): {
 }
 
 async function generarNumeroVale(): Promise<string> {
-  const counterRef = doc(db, 'contadores', 'vale_counter');
+  const counterRef = doc(getDb(), 'contadores', 'vale_counter');
 
-  const nuevoNumero = await runTransaction(db, async (transaction) => {
+  const nuevoNumero = await runTransaction(getDb(), async (transaction) => {
     const counterDoc = await transaction.get(counterRef);
     let ultimoNumero = 0;
 
@@ -158,7 +158,7 @@ export default function CargarPage() {
     setCargando(true);
 
     try {
-      const valesRef = collection(db, 'vales');
+      const valesRef = collection(getDb(), 'vales');
       const valesConFechas: { id: string; numero: string; empleado: string; monto: number; fechaPago: string }[] = [];
 
       for (const fila of filasValidas) {
