@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+const API_KEY = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
 const FIRESTORE_BASE_URL = `https://firestore.googleapis.com/v1/projects/${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}/databases/(default)/documents`;
 
 async function fetchFirestore(path: string, options?: RequestInit) {
-  return fetch(`${FIRESTORE_BASE_URL}/${path}`, {
+  const url = API_KEY
+    ? `${FIRESTORE_BASE_URL}/${path}?key=${API_KEY}`
+    : `${FIRESTORE_BASE_URL}/${path}`;
+  return fetch(url, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
