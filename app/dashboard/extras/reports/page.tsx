@@ -8,7 +8,7 @@ import { Loader2, Download, Copy, Users, User } from 'lucide-react';
 import { ExtraEmployee, WeeklyTimesheet } from '@/types/extras';
 import { getAllEmployees, getWeeklyTimesheetsForEmployee, getAllTimesheetsForMonth } from '@/lib/extras/firestore';
 import { DAYS_OF_WEEK, DAY_LABELS, formatDateISO, formatDateArg, formatDecimalToHours } from '@/lib/extras/timeUtils';
-import * as XLSX from 'xlsx';
+import type { ExtraDay } from '@/types/extras';
 
 const DAY_INDEX: Record<string, number> = { monday: 0, tuesday: 1, wednesday: 2, thursday: 3, friday: 4, saturday: 5 };
 
@@ -110,74 +110,229 @@ export default function ReportsPage() {
 
   const semanaActual = semanas.find((s) => s.key === semanaKey);
 
-  const exportarExcel = () => {
-    const periodo = `${mes.split('-')[1]}/${mes.split('-')[0]}`;
+  const exportarExcel = async () => {
+    try {
+      const ExcelJS = await import('exceljs');
+      const wb = new ExcelJS.default.Workbook();
+      const ws = wb.addWorksheet('Horas Extras');
 
-    const wb = XLSX.utils.book_new();
-    const EMPRESA = 'FALPAT SRL';
-    const DIRECCION = 'Administración - Reporte de Horas Extras';
-    const encabezado: (string | number)[][] = [
-      [EMPRESA],
-      [DIRECCION],
-      [],
-      [`Período: ${periodo}`],
-      [`Generado: ${new Date().toLocaleDateString('es-AR')}`],
-    ];
-    if (semanaActual) {
-      encabezado.push([`${semanaActual.label}`]);
-    }
-    encabezado.push([]);
+      const COLORS = {
+        purple: 'FF6C3CE1',
+        cyan: 'FF00D4FF',
+        white: 'FFFFFFFF',
+        darkBg: 'FF1A1A3E',
+        greyFill: 'FFF0F0F0',
+        lightPurple: 'FFF5F0FF',
+        darkText: 'FF1A1A3E',
+        greyText: 'FF666666',
+        border: 'FFD0D0D0',
+      };
 
-    const selected = displayed;
-    const daysOfWeek = DAYS_OF_WEEK;
-    const dayHeaders = daysOfWeek.map((d) => {
-      if (!semanaKey || !selected.length) return DAY_LABELS[d];
-      const ws = selected[0].weekStartDate.toDate();
-      const date = getDayDate(ws, DAY_INDEX[d]);
-      return `${DAY_LABELS[d]}\n${formatDDMM(date)}`;
-    });
-    const headers = ['Empleado', 'Semana', ...dayHeaders, 'Total Extra'];
+      const font = (name: string, size: number, bold = false, color?: string, italic = false) => ({
+        name, size, bold, color: color ? { argb: color } : undefined, italic,
+      });
 
-    const bodyRows: (string | number)[][] = [];
-    for (const t of selected) {
-      const ws = t.weekStartDate.toDate();
-      const weekStr = `${getWeekNumber(ws)} - ${formatDateArg(ws)} al ${formatDateArg(getDayDate(ws, 5))}`;
-      const row: (string | number)[] = [
-        empleadoId === '__all__' ? t.employeeName : '',
-        weekStr,
-      ];
-      for (const day of daysOfWeek) {
-        row.push(t.days[day]?.overtimeHours ?? 0);
+      const fill = (color: string) => ({ type: 'pattern' as const, pattern: 'solid' as const, fgColor: { argb: color } });
+
+      const border = {
+        top: { style: 'thin' as const, color: { argb: COLORS.border } },
+        bottom: { style: 'thin' as const, color: { argb: COLORS.border } },
+        left: { style: 'thin' as const, color: { argb: COLORS.border } },
+        right: { style: 'thin' as const, color: { argb: COLORS.border } },
+      };
+
+      const colWidths = [32, 26, 16, 16, 16, 16, 16, 16, 16, 14];
+      colWidths.forEach((w, i) => { ws.getColumn(i + 1).width = w; });
+
+      const selected = displayed;
+      const daysOfWeek = DAYS_OF_WEEK;
+      const periodo = `${mes.split('-')[1]}/${mes.split('-')[0]}`;
+      let r = 1;
+
+      // ── Header ──
+      ws.mergeCells(`A${r}:J${r}`);
+      const c1 = ws.getCell(`A${r}`);
+      c1.value = 'FALPAT SRL';
+      c1.font = font('Calibri', 16, true, COLORS.darkBg);
+      c1.alignment = { vertical: 'middle' };
+      ws.getRow(r).height = 28;
+      r++;
+
+      ws.mergeCells(`A${r}:J${r}`);
+      const c2 = ws.getCell(`A${r}`);
+      c2.value = 'Administración — Reporte de Horas Extras';
+      c2.font = font('Calibri', 11, false, COLORS.greyText, true);
+      r += 2;
+
+      ws.mergeCells(`A${r}:J${r}`);
+      ws.getCell(`A${r}`).value = `Período: ${periodo}`;
+      ws.getCell(`A${r}`).font = font('Calibri', 11, true, COLORS.darkBg);
+      r++;
+
+      ws.mergeCells(`A${r}:J${r}`);
+      ws.getCell(`A${r}`).value = `Generado: ${new Date().toLocaleDateString('es-AR')}`;
+      ws.getCell(`A${r}`).font = font('Calibri', 10, false, COLORS.greyText);
+      r++;
+
+      if (semanaActual) {
+        ws.mergeCells(`A${r}:J${r}`);
+        ws.getCell(`A${r}`).value = semanaActual.label;
+        ws.getCell(`A${r}`).font = font('Calibri', 10, true, COLORS.purple);
+        r++;
+
+        const wsDate = selected.length > 0 ? selected[0].weekStartDate.toDate() : null;
+        if (wsDate) {
+          ws.mergeCells(`A${r}:J${r}`);
+          ws.getCell(`A${r}`).value = `Semana desde: ${formatDateArg(wsDate)}  Hasta: ${formatDateArg(getDayDate(wsDate, 5))}`;
+          ws.getCell(`A${r}`).font = font('Calibri', 10, false, COLORS.greyText);
+          r++;
+        }
       }
-      row.push(t.weekTotalOvertime);
-      bodyRows.push(row);
+
+      r++;
+
+      // ── Column headers ──
+      const dayColHeaders: string[] = [];
+      for (const d of daysOfWeek) {
+        let label = DAY_LABELS[d];
+        if (selected.length > 0 && semanaKey) {
+          const date = getDayDate(selected[0].weekStartDate.toDate(), DAY_INDEX[d]);
+          label += `\n${formatDDMM(date)}`;
+        }
+        dayColHeaders.push(label);
+      }
+      const colHeaders = ['Empleado', 'Semana', ...dayColHeaders, 'Total Extra'];
+
+      const headerRow = ws.getRow(r);
+      headerRow.height = 36;
+      colHeaders.forEach((h, i) => {
+        const cell = headerRow.getCell(i + 1);
+        cell.value = h;
+        cell.font = font('Calibri', 10, true, COLORS.white);
+        cell.fill = fill(COLORS.purple);
+        cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+        cell.border = border;
+      });
+      // Empleado column left-aligned
+      headerRow.getCell(1).alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+      r++;
+
+      // ── Group by employee ──
+      const groups = new Map<string, typeof selected>();
+      for (const t of selected) {
+        const key = t.employeeId;
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key)!.push(t);
+      }
+
+      const hasExtras = (t: typeof selected[number]) => t.weekTotalOvertime > 0;
+
+      for (const [empId, rows] of groups) {
+        const empName = rows[0].employeeName;
+
+        // Employee section header (if all employees)
+        if (empleadoId === '__all__') {
+          ws.mergeCells(`A${r}:J${r}`);
+          const secCell = ws.getCell(`A${r}`);
+          secCell.value = `👤 ${empName}`;
+          secCell.font = font('Calibri', 11, true, COLORS.darkBg);
+          secCell.fill = fill(COLORS.lightPurple);
+          secCell.border = border;
+          ws.getRow(r).height = 24;
+          r++;
+        }
+
+        for (const t of rows) {
+          const wsDate = t.weekStartDate.toDate();
+          const weekStr = `S${getWeekNumber(wsDate)} — ${formatDateArg(wsDate)} al ${formatDateArg(getDayDate(wsDate, 5))}`;
+          const hasExtra = hasExtras(t);
+          const rowFill = hasExtra ? fill(COLORS.greyFill) : undefined;
+
+          const rowObj = ws.getRow(r);
+          rowObj.height = hasExtra ? 40 : 24;
+
+          // Empleado column
+          const empCell = rowObj.getCell(1);
+          empCell.value = empleadoId === '__all__' ? '' : empName;
+          empCell.font = font('Calibri', 10, false, COLORS.darkText);
+          empCell.border = border;
+          if (rowFill) empCell.fill = rowFill;
+
+          // Semana column
+          const semCell = rowObj.getCell(2);
+          semCell.value = weekStr;
+          semCell.font = font('Calibri', 9, false, COLORS.greyText);
+          semCell.border = border;
+          if (rowFill) semCell.fill = rowFill;
+
+          // Day columns
+          for (let di = 0; di < daysOfWeek.length; di++) {
+            const day = daysOfWeek[di];
+            const dayData: ExtraDay | undefined = t.days[day];
+            const cell = rowObj.getCell(3 + di);
+            cell.border = border;
+            if (rowFill) cell.fill = rowFill;
+
+            if (dayData && (dayData.actualStart || dayData.actualEnd)) {
+              const range = `${dayData.actualStart || '—'} - ${dayData.actualEnd || '—'}`;
+              const extra = dayData.overtimeHours > 0 ? `${formatDecimalToHours(dayData.overtimeHours)} extra` : '';
+              cell.value = extra ? `${range}\n${extra}` : range;
+              cell.font = font('Calibri', 9, dayData.overtimeHours > 0, dayData.overtimeHours > 0 ? COLORS.purple : COLORS.darkText);
+            } else {
+              cell.value = '—';
+              cell.font = font('Calibri', 9, false, COLORS.greyText);
+            }
+            cell.alignment = { horizontal: 'center', vertical: 'middle', wrapText: true };
+          }
+
+          // Total Extra column
+          const totalCell = rowObj.getCell(3 + daysOfWeek.length);
+          totalCell.value = formatDecimalToHours(t.weekTotalOvertime);
+          totalCell.font = font('Calibri', 10, true, hasExtra ? COLORS.cyan : COLORS.greyText);
+          totalCell.alignment = { horizontal: 'center', vertical: 'middle' };
+          totalCell.border = border;
+          if (rowFill) totalCell.fill = rowFill;
+
+          r++;
+        }
+
+        // Blank separator row between groups
+        if (empleadoId === '__all__' && rows.length > 0) {
+          r++;
+        }
+      }
+
+      // ── Total row ──
+      r++;
+      ws.mergeCells(`A${r}:I${r}`);
+      const totalLabel = ws.getCell(`A${r}`);
+      totalLabel.value = 'TOTAL GENERAL';
+      totalLabel.font = font('Calibri', 12, true, COLORS.white);
+      totalLabel.fill = fill(COLORS.darkBg);
+      totalLabel.alignment = { horizontal: 'right', vertical: 'middle' };
+      totalLabel.border = border;
+
+      const totalVal = ws.getCell(`J${r}`);
+      totalVal.value = formatDecimalToHours(totalGeneral);
+      totalVal.font = font('Calibri', 12, true, COLORS.cyan);
+      totalVal.fill = fill(COLORS.darkBg);
+      totalVal.alignment = { horizontal: 'center', vertical: 'middle' };
+      totalVal.border = border;
+      ws.getRow(r).height = 30;
+
+      const buffer = await wb.xlsx.writeBuffer() as ArrayBuffer;
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const sufijo = semanaKey ? semanaActual!.label.replace(/[^a-zA-Z0-9]/g, '_') : 'completo';
+      link.download = `extras_${mes}_${empleadoId === '__all__' ? sufijo : empleadoNombre?.replace(/\s+/g, '_')}.xlsx`;
+      link.click();
+
+      toast({ title: 'Excel exportado', description: 'Reporte generado con formato profesional', variant: 'success' });
+    } catch (err) {
+      console.error(err);
+      toast({ title: 'Error', description: 'No se pudo generar el Excel', variant: 'destructive' });
     }
-
-    const wsData = [
-      ...encabezado,
-      headers,
-      ...bodyRows,
-      [],
-      ['TOTAL', '', '', '', '', '', '', '', formatDecimalToHours(totalGeneral)],
-    ];
-
-    const ws = XLSX.utils.aoa_to_sheet(wsData);
-    ws['!cols'] = [
-      { wch: 28 },
-      { wch: 24 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 10 },
-      { wch: 12 },
-    ];
-    XLSX.utils.book_append_sheet(wb, ws, 'Horas Extras');
-    const sufijo = semanaKey ? semanaActual!.label.replace(/[^a-zA-Z0-9]/g, '_') : 'completo';
-    const filename = `extras_${mes}_${empleadoId === '__all__' ? sufijo : empleadoNombre?.replace(/\s+/g, '_')}.xlsx`;
-    XLSX.writeFile(wb, filename);
-    toast({ title: 'Excel exportado', description: filename, variant: 'success' });
   };
 
   const copiarAlPortapapeles = () => {
