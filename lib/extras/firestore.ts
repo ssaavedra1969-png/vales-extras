@@ -117,6 +117,34 @@ export async function saveWeeklyTimesheet(
   return docRef.id;
 }
 
+export async function getAllTimesheetsForMonth(
+  year: number,
+  month: number
+): Promise<(WeeklyTimesheet & { employeeName: string })[]> {
+  const monthStart = new Date(year, month - 1, 1);
+  const monthEnd = new Date(year, month, 0, 23, 59, 59);
+
+  const q = query(
+    collection(getDb(), EXTRA_TIMESHEETS),
+    where('weekStartDate', '>=', Timestamp.fromDate(monthStart)),
+    where('weekStartDate', '<=', Timestamp.fromDate(monthEnd)),
+    orderBy('weekStartDate', 'desc')
+  );
+
+  const snapshot = await getDocs(q);
+
+  const versions = new Map<string, WeeklyTimesheet & { employeeName: string }>();
+  for (const docSnap of snapshot.docs) {
+    const data = { id: docSnap.id, ...docSnap.data() } as WeeklyTimesheet & { employeeName: string };
+    const key = `${data.employeeId}_${data.weekStartDate.toMillis()}`;
+    if (!versions.has(key) || (versions.get(key)?.version ?? 0) < data.version) {
+      versions.set(key, data);
+    }
+  }
+
+  return Array.from(versions.values());
+}
+
 export async function getOvertimeSummary(
   employeeId: string,
   year: number,
