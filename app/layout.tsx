@@ -5,9 +5,9 @@ import { Toaster } from '@/components/ui/toaster';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'FALPAT SRL - Sistema de Gestión de Vales',
+  title: 'RRHH de FALPAT SRL',
   description:
-    'Sistema de gestión de vales de pago para empleados de FALPAT SRL',
+    'Sistema de gestión de RRHH - VALES y EXTRAS',
 };
 
 export default function RootLayout({

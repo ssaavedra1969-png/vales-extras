@@ -7,7 +7,7 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/dashboard/cargar');
+    router.replace('/dashboard');
   }, [router]);
 
   return (
