@@ -254,8 +254,6 @@ function ValeHalf({
       </View>
 
       <View style={styles.footer}>
-        <Text>Vale válido por 30 días desde su emisión</Text>
-        <Text>Vale Nro: {vale.numero}</Text>
         <View style={styles.qrPlaceholder}>
           <Text style={styles.qrText}>QR{'\n'}{vale.numero.slice(-6)}</Text>
         </View>
