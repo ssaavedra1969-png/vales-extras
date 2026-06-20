@@ -3,15 +3,17 @@ import { Timestamp } from 'firebase/firestore';
 export interface Vale {
   id: string;
   numero: string;
+  legajo: string;
   empleado: string;
   monto: number;
   fechaPago: string;
   fechaGeneracion: Timestamp;
-  estado: 'pendiente' | 'firmado' | 'descontado';
+  estado: 'pendiente' | 'firmado' | 'confirmado' | 'descontado';
   mesDescuento?: string;
 }
 
 export interface ValeCreateInput {
+  legajo: string;
   empleado: string;
   monto: number;
   fechaPago: string;
@@ -39,6 +41,7 @@ export interface LogEntry {
 }
 
 export interface ExcelRow {
+  legajo: string;
   empleado: string;
   monto: number;
   fechaPago: string;

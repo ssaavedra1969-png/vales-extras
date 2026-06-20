@@ -12,6 +12,7 @@ import {
   Percent,
   Settings,
   FileText,
+  Archive,
 } from 'lucide-react';
 
 const menuItems = [
@@ -21,14 +22,19 @@ const menuItems = [
     icon: Upload,
   },
   {
-    href: '/dashboard/historial',
-    label: 'Historial',
-    icon: History,
+    href: '/dashboard/vales',
+    label: 'VALES',
+    icon: FileText,
   },
   {
     href: '/dashboard/descuentos',
     label: 'Gestión de Descuentos',
     icon: Percent,
+  },
+  {
+    href: '/dashboard/historial',
+    label: 'Historial',
+    icon: Archive,
   },
   {
     href: '/dashboard/configuracion',

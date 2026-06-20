@@ -2,10 +2,10 @@
 
 import React, { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import * as XLSX from 'xlsx';
 import { pdf } from '@react-pdf/renderer';
-import { doc, runTransaction, collection, addDoc, Timestamp } from 'firebase/firestore';
+import { doc, runTransaction, addDoc, collection, Timestamp } from 'firebase/firestore';
 import { getDb } from '@/lib/firebase/config';
+import { parseExcelFile } from '@/lib/excel/parser';
 import ValeTemplate from '@/components/vale/ValeTemplate';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,64 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { Upload, FileSpreadsheet, Download, AlertCircle, CheckCircle2, X, Loader2 } from 'lucide-react';
 import { ExcelRow, ConfigEmpresa, Vale } from '@/types';
-import { format, parse } from 'date-fns';
 import JSZip from 'jszip';
-
-function parseExcelFile(buffer: ArrayBuffer): {
-  filasValidas: ExcelRow[];
-  filasInvalidas: ExcelRow[];
-} {
-  const workbook = XLSX.read(buffer, { type: 'array' });
-  const sheetName = workbook.SheetNames[0];
-  const worksheet = workbook.Sheets[sheetName];
-  const rawData = XLSX.utils.sheet_to_json<unknown[]>(worksheet, { header: 1 });
-
-  const filasValidas: ExcelRow[] = [];
-  const filasInvalidas: ExcelRow[] = [];
-
-  for (let i = 0; i < rawData.length; i++) {
-    const row = rawData[i];
-    if (!row || row.length < 3) continue;
-
-    const empleado = String(row[0] || '').trim();
-    const montoRaw = row[1];
-    const fechaRaw = row[2];
-    const errores: string[] = [];
-
-    if (!empleado) errores.push('Nombre vacío');
-
-    let monto = 0;
-    if (montoRaw === undefined || montoRaw === null || montoRaw === '') {
-      errores.push('Monto vacío');
-    } else {
-      monto = parseFloat(String(montoRaw).replace(',', '.'));
-      if (isNaN(monto) || monto <= 0) errores.push('Monto inválido o negativo');
-    }
-
-    let fechaPago = '';
-    if (!fechaRaw || fechaRaw === '') {
-      errores.push('Fecha vacía');
-    } else {
-      const fechaStr = String(fechaRaw).trim();
-      const parsedDate = parse(fechaStr, 'dd/MM/yyyy', new Date());
-      if (isNaN(parsedDate.getTime())) {
-        errores.push('Formato inválido (dd/mm/yyyy)');
-      } else {
-        fechaPago = format(parsedDate, 'dd/MM/yyyy');
-      }
-    }
-
-    const rowData: ExcelRow = { empleado, monto, fechaPago };
-    if (errores.length > 0) {
-      rowData.error = errores.join('; ');
-      filasInvalidas.push(rowData);
-    } else {
-      filasValidas.push(rowData);
-    }
-  }
-
-  return { filasValidas, filasInvalidas };
-}
 
 async function generarNumeroVale(): Promise<string> {
   const counterRef = doc(getDb(), 'contadores', 'vale_counter');
@@ -91,12 +34,8 @@ async function generarNumeroVale(): Promise<string> {
     return siguiente;
   });
 
-  const now = new Date();
-  const year = now.getFullYear();
-  const month = String(now.getMonth() + 1).padStart(2, '0');
   const correlativo = String(nuevoNumero).padStart(5, '0');
-
-  return `FALPAT-${year}-${month}-${correlativo}`;
+  return `FALPAT - ${correlativo}`;
 }
 
 export default function CargarPage() {
@@ -104,7 +43,7 @@ export default function CargarPage() {
   const [filasInvalidas, setFilasInvalidas] = useState<ExcelRow[]>([]);
   const [cargando, setCargando] = useState(false);
   const [valesCreados, setValesCreados] = useState<
-    { id: string; numero: string; empleado: string; monto: number; fechaPago: string }[]
+    { id: string; numero: string; legajo: string; empleado: string; monto: number; fechaPago: string }[]
   >([]);
   const { toast } = useToast();
 
@@ -159,23 +98,24 @@ export default function CargarPage() {
 
     try {
       const valesRef = collection(getDb(), 'vales');
-      const valesConFechas: { id: string; numero: string; empleado: string; monto: number; fechaPago: string }[] = [];
+      const valesConFechas: { id: string; numero: string; legajo: string; empleado: string; monto: number; fechaPago: string }[] = [];
 
       for (const fila of filasValidas) {
         const numero = await generarNumeroVale();
         const docRef = await addDoc(valesRef, {
           numero,
+          legajo: fila.legajo,
           empleado: fila.empleado,
           monto: fila.monto,
           fechaPago: fila.fechaPago,
           fechaGeneracion: Timestamp.now(),
           estado: 'pendiente',
-          mesDescuento: '',
         });
 
         valesConFechas.push({
           id: docRef.id,
           numero,
+          legajo: fila.legajo,
           empleado: fila.empleado,
           monto: fila.monto,
           fechaPago: fila.fechaPago,
@@ -201,6 +141,7 @@ export default function CargarPage() {
           const valeData: Vale = {
             id: vale.id,
             numero: vale.numero,
+            legajo: vale.legajo,
             empleado: vale.empleado,
             monto: vale.monto,
             fechaPago: vale.fechaPago,
@@ -209,7 +150,7 @@ export default function CargarPage() {
           };
 
           const pdfBlob = await pdf(<ValeTemplate vale={valeData} config={config} />).toBlob();
-          zip.file(`vale_${vale.numero}.pdf`, pdfBlob);
+          zip.file(`vale_${vale.numero.replace(/\s/g, '_')}.pdf`, pdfBlob);
           pdfsOk++;
         } catch (pdfError) {
           console.error(`Error en PDF para ${vale.numero}:`, pdfError);
@@ -251,7 +192,7 @@ export default function CargarPage() {
         <CardHeader>
           <CardTitle className="text-lg">Seleccionar archivo</CardTitle>
           <CardDescription>
-            El archivo debe tener 3 columnas: Nombre, Monto, Fecha de pago (dd/mm/yyyy)
+            El archivo debe tener 4 columnas: Legajo, Nombre, Monto, Fecha de pago (dd/mm/yyyy)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -315,7 +256,7 @@ export default function CargarPage() {
                 <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
                 <div className="text-sm text-green-800 dark:text-green-200">
                   <strong>{valesCreados.length} vales creados.</strong> Los PDFs se descargaron en un ZIP.
-                  Podés ver los vales desde el <strong>Historial</strong>.
+                  Podés ver los vales desde la sección <strong>VALES</strong>.
                 </div>
               </div>
             )}
@@ -328,7 +269,8 @@ export default function CargarPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>#</TableHead>
-                        <TableHead>Empleado</TableHead>
+                        <TableHead>Legajo</TableHead>
+                        <TableHead>Nombre</TableHead>
                         <TableHead>Monto</TableHead>
                         <TableHead>Fecha de pago</TableHead>
                         {valesCreados.length > 0 && <TableHead>N° Vale</TableHead>}
@@ -338,6 +280,7 @@ export default function CargarPage() {
                       {filasValidas.map((fila, idx) => (
                         <TableRow key={idx}>
                           <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
+                          <TableCell className="font-mono text-xs">{fila.legajo}</TableCell>
                           <TableCell className="font-medium">{fila.empleado}</TableCell>
                           <TableCell>${fila.monto.toFixed(2)}</TableCell>
                           <TableCell>{fila.fechaPago}</TableCell>
@@ -362,7 +305,8 @@ export default function CargarPage() {
                     <TableHeader>
                       <TableRow className="bg-red-50 dark:bg-red-950">
                         <TableHead>#</TableHead>
-                        <TableHead>Empleado</TableHead>
+                        <TableHead>Legajo</TableHead>
+                        <TableHead>Nombre</TableHead>
                         <TableHead>Monto</TableHead>
                         <TableHead>Fecha</TableHead>
                         <TableHead>Error</TableHead>
@@ -372,6 +316,7 @@ export default function CargarPage() {
                       {filasInvalidas.map((fila, idx) => (
                         <TableRow key={idx}>
                           <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
+                          <TableCell>{fila.legajo || '-'}</TableCell>
                           <TableCell>{fila.empleado || '(vacío)'}</TableCell>
                           <TableCell>{fila.monto || '-'}</TableCell>
                           <TableCell>{fila.fechaPago || '-'}</TableCell>

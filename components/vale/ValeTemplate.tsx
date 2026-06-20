@@ -1,8 +1,6 @@
 import React from 'react';
 import { Document, Page, View, Text, StyleSheet } from '@react-pdf/renderer';
 import { Vale, ConfigEmpresa } from '@/types';
-import { format } from 'date-fns';
-import { es } from 'date-fns/locale';
 import { numeroALetras } from '@/lib/pdf/numero-letras';
 
 const styles = StyleSheet.create({
@@ -91,7 +89,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1A2A3A',
     textAlign: 'center',
-    marginBottom: 4,
+    marginBottom: 8,
     padding: 4,
     backgroundColor: '#E8ECEF',
     borderRadius: 3,
@@ -105,15 +103,7 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 10,
     color: '#1A2A3A',
-    marginBottom: 4,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  field: {
-    width: '48%',
+    marginBottom: 6,
   },
   amountBox: {
     flexDirection: 'row',
@@ -186,9 +176,6 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
   },
-  divider: {
-    marginVertical: 4,
-  },
 });
 
 function ValeHalf({
@@ -200,10 +187,6 @@ function ValeHalf({
   config: ConfigEmpresa;
   etiqueta: 'ORIGINAL' | 'COPIA';
 }) {
-  const fechaEmision = format(new Date(), "dd 'de' MMMM 'de' yyyy", {
-    locale: es,
-  });
-
   return (
     <View style={styles.half}>
       <View style={styles.header}>
@@ -231,16 +214,11 @@ function ValeHalf({
       <View style={styles.bodySection}>
         <Text style={styles.valeNumber}>{vale.numero}</Text>
 
-        <View style={styles.row}>
-          <View style={styles.field}>
-            <Text style={styles.label}>FECHA DE EMISIÓN</Text>
-            <Text style={styles.value}>{fechaEmision}</Text>
-          </View>
-          <View style={styles.field}>
-            <Text style={styles.label}>FECHA DE PAGO</Text>
-            <Text style={styles.value}>{vale.fechaPago}</Text>
-          </View>
-        </View>
+        <Text style={styles.label}>FECHA DE PAGO</Text>
+        <Text style={styles.value}>{vale.fechaPago}</Text>
+
+        <Text style={styles.label}>LEGAJO</Text>
+        <Text style={styles.value}>{vale.legajo}</Text>
 
         <Text style={styles.label}>EMPLEADO</Text>
         <Text style={styles.value}>{vale.empleado}</Text>
@@ -257,7 +235,7 @@ function ValeHalf({
         </View>
 
         <Text style={styles.amountWords}>
-          SON: {numeroALetras(vale.monto)} PESOS ARGENTINOS
+          SON PESOS ARGENTINOS: {numeroALetras(vale.monto)}
         </Text>
       </View>
 

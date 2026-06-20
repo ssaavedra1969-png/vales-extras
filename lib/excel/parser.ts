@@ -19,16 +19,21 @@ export function parseExcelFile(buffer: ArrayBuffer): {
 
   for (let i = 0; i < rawData.length; i++) {
     const row = rawData[i];
-    if (!row || row.length < 3) continue;
+    if (!row || row.length < 4) continue;
 
-    const empleado = String(row[0] || '').trim();
-    const montoRaw = row[1];
-    const fechaRaw = row[2];
+    const legajo = String(row[0] || '').trim();
+    const empleado = String(row[1] || '').trim();
+    const montoRaw = row[2];
+    const fechaRaw = row[3];
 
     const errores: string[] = [];
 
+    if (!legajo) {
+      errores.push('Legajo vacío');
+    }
+
     if (!empleado) {
-      errores.push('Nombre de empleado vacío');
+      errores.push('Nombre vacío');
     }
 
     let monto = 0;
@@ -55,6 +60,7 @@ export function parseExcelFile(buffer: ArrayBuffer): {
     }
 
     const rowData: ExcelRow = {
+      legajo,
       empleado,
       monto,
       fechaPago,

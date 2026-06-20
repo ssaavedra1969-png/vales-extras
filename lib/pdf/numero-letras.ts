@@ -69,7 +69,11 @@ export function numeroALetras(num: number): string {
   }
 
   letras = letras.trim();
-  letras += ' CON ' + String(decimales).padStart(2, '0') + '/100';
+
+  if (decimales > 0) {
+    const centavos = numeroALetras(decimales);
+    letras += ' CON ' + centavos + ' CENTAVOS';
+  }
 
   return letras;
 }

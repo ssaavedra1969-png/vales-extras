@@ -9,9 +9,9 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { Download, CheckCircle2, Loader2 } from 'lucide-react';
 import { Vale } from '@/types';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { getDb } from '@/lib/firebase/config';
-import { updateValeEstado } from '@/lib/firebase/firestore';
+import { descontarVale } from '@/lib/firebase/firestore';
 import * as XLSX from 'xlsx';
 
 export default function DescuentosPage() {
@@ -29,14 +29,9 @@ export default function DescuentosPage() {
   const cargarVales = async () => {
     setCargando(true);
     try {
-      const q = query(
-        collection(getDb(), 'vales'),
-        where('estado', '==', 'firmado')
-      );
-      const snapshot = await getDocs(q);
+      const snapshot = await getDocs(collection(getDb(), 'vales_confirmados'));
       const todos = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() } as Vale));
 
-      // Filtrar por mes
       const filtrados = todos.filter((vale) => {
         if (!vale.fechaPago) return false;
         const partes = vale.fechaPago.split('/');
@@ -88,7 +83,7 @@ export default function DescuentosPage() {
     try {
       for (const id of seleccionados) {
         try {
-          await updateValeEstado(id, 'descontado', mes);
+          await descontarVale(id, mes);
           ok++;
         } catch {
           console.error(`Error al descontar vale ${id}`);
@@ -97,7 +92,7 @@ export default function DescuentosPage() {
 
       toast({
         title: 'Descuentos aplicados',
-        description: `${ok} vales marcados como descontados`,
+        description: `${ok} vales enviados al Historial`,
         variant: 'success',
       });
 
@@ -113,7 +108,7 @@ export default function DescuentosPage() {
     setExportando(true);
     try {
       const data = vales.map((vale) => ({
-        Legajo: '',
+        Legajo: vale.legajo || '',
         Nombre: vale.empleado,
         NroVale: vale.numero,
         Monto: vale.monto,
@@ -122,8 +117,6 @@ export default function DescuentosPage() {
       }));
 
       const ws = XLSX.utils.json_to_sheet(data);
-
-      // Ancho de columnas
       ws['!cols'] = [
         { wch: 10 }, { wch: 30 }, { wch: 25 }, { wch: 15 }, { wch: 15 }, { wch: 12 },
       ];
@@ -161,13 +154,13 @@ export default function DescuentosPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold">Gestión de Descuentos</h1>
-        <p className="text-muted-foreground">Selecciona vales firmados y marcalos como descontados</p>
+        <p className="text-muted-foreground">Selecciona vales confirmados y marcalos como descontados</p>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Seleccionar período</CardTitle>
-          <CardDescription>Elige el mes para filtrar los vales firmados</CardDescription>
+          <CardDescription>Elige el mes para filtrar los vales confirmados</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-wrap gap-3 items-end">
@@ -195,7 +188,7 @@ export default function DescuentosPage() {
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-2">
             <div>
-              <CardTitle className="text-lg">Vales firmados</CardTitle>
+              <CardTitle className="text-lg">Vales confirmados</CardTitle>
               <CardDescription>
                 {vales.length} vales encontrados - {seleccionados.size} seleccionados
               </CardDescription>
@@ -233,7 +226,7 @@ export default function DescuentosPage() {
             </div>
           ) : vales.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground">
-              <p>No hay vales firmados para este período</p>
+              <p>No hay vales confirmados para este período</p>
             </div>
           ) : (
             <div className="border rounded-lg overflow-hidden">
@@ -247,6 +240,7 @@ export default function DescuentosPage() {
                       />
                     </TableHead>
                     <TableHead>N° Vale</TableHead>
+                    <TableHead>Legajo</TableHead>
                     <TableHead>Empleado</TableHead>
                     <TableHead>Monto</TableHead>
                     <TableHead>Fecha de pago</TableHead>
@@ -266,10 +260,11 @@ export default function DescuentosPage() {
                         />
                       </TableCell>
                       <TableCell className="font-mono text-xs">{vale.numero}</TableCell>
+                      <TableCell className="font-mono text-xs">{vale.legajo}</TableCell>
                       <TableCell className="font-medium">{vale.empleado}</TableCell>
                       <TableCell>${vale.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</TableCell>
                       <TableCell>{vale.fechaPago}</TableCell>
-                      <TableCell><Badge variant="success">Firmado</Badge></TableCell>
+                      <TableCell><Badge variant="warning">Confirmado</Badge></TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
