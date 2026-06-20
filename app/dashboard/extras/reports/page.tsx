@@ -94,7 +94,7 @@ export default function ReportsPage() {
         const d = new Date(k);
         const end = new Date(d);
         end.setDate(end.getDate() + 5);
-        return { key: k, start: d, end, label: `Semana ${getWeekNumber(d)} — ${formatDateArg(d)} al ${formatDateArg(end)}` };
+        return { key: k, start: d, end, label: `S${getWeekNumber(d)} — ${formatDateArg(d)} al ${formatDateArg(end)}` };
       });
   }, [timesheets]);
 
@@ -177,16 +177,8 @@ export default function ReportsPage() {
       if (semanaActual) {
         ws.mergeCells(`A${r}:J${r}`);
         ws.getCell(`A${r}`).value = semanaActual.label;
-        ws.getCell(`A${r}`).font = font('Calibri', 10, true, COLORS.purple);
+        ws.getCell(`A${r}`).font = font('Calibri', 11, true, COLORS.purple);
         r++;
-
-        const wsDate = selected.length > 0 ? selected[0].weekStartDate.toDate() : null;
-        if (wsDate) {
-          ws.mergeCells(`A${r}:J${r}`);
-          ws.getCell(`A${r}`).value = `Semana desde: ${formatDateArg(wsDate)}  Hasta: ${formatDateArg(getDayDate(wsDate, 5))}`;
-          ws.getCell(`A${r}`).font = font('Calibri', 10, false, COLORS.greyText);
-          r++;
-        }
       }
 
       r++;
@@ -495,7 +487,7 @@ export default function ReportsPage() {
                               <TableCell className="font-medium text-xs text-white">{t.employeeName}</TableCell>
                             )}
                             <TableCell className="font-mono text-xs text-[#B0B0D0]">
-                              <span className="text-[#6C3CE1] font-semibold">S{getWeekNumber(ws)}</span> {formatDateArg(ws)} — {formatDateArg(end)}
+                              <span className="text-[#6C3CE1] font-semibold">S{getWeekNumber(ws)}</span> — {formatDateArg(ws)} al {formatDateArg(end)}
                             </TableCell>
                             {DAYS_OF_WEEK.map((day) => (
                               <TableCell key={day} className="text-xs text-center text-[#B0B0D0]">
