@@ -5,14 +5,13 @@ import { numeroALetras } from '@/lib/pdf/numero-letras';
 
 const styles = StyleSheet.create({
   page: {
-    padding: 30,
+    padding: 20,
     fontFamily: 'Helvetica',
     fontSize: 9,
   },
   half: {
-    height: '50%',
-    padding: 10,
-    position: 'relative',
+    height: '48%',
+    padding: 8,
   },
   cutLine: {
     borderTopWidth: 1,
