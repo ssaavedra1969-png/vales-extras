@@ -42,9 +42,12 @@ export async function getNextValeNumber(): Promise<string> {
     const nuevoNumero = ultimoNumero + 1;
     transaction.update(counterRef, { ultimoNumero: nuevoNumero });
 
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
     const correlativo = String(nuevoNumero).padStart(5, '0');
 
-    return `FALPAT - ${correlativo}`;
+    return `${year}${month} - ${correlativo}`;
   });
 }
 

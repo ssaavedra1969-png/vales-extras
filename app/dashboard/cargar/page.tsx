@@ -34,8 +34,11 @@ async function generarNumeroVale(): Promise<string> {
     return siguiente;
   });
 
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
   const correlativo = String(nuevoNumero).padStart(5, '0');
-  return `FALPAT - ${correlativo}`;
+  return `${year}${month} - ${correlativo}`;
 }
 
 export default function CargarPage() {
