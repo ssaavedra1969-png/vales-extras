@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FileText, Gift, ArrowRight, Sparkles } from 'lucide-react';
+import { FileText, Gift, ArrowRight, Sparkles, ExternalLink, Truck } from 'lucide-react';
 
 export default function DashboardHome() {
   const router = useRouter();
@@ -30,7 +30,7 @@ export default function DashboardHome() {
         </p>
       </div>
 
-      <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-5xl">
+      <div className="relative z-10 grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-7xl">
         <div className="animate-fadeInUp stagger-1">
           <Card
             className="glass-card glass-card-vales cursor-pointer"
@@ -72,6 +72,29 @@ export default function DashboardHome() {
                 onClick={(e) => { e.stopPropagation(); router.push('/dashboard/extras'); }}
               >
                 Acceder <ArrowRight className="h-4 w-4 ml-1 inline" />
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        <div className="animate-fadeInUp stagger-3">
+          <Card
+            className="glass-card glass-card-vehiculos cursor-pointer"
+            onClick={() => window.open('https://herramientas-five.vercel.app/login', '_blank', 'noopener,noreferrer')}
+          >
+            <div className="flex flex-col items-center text-center p-8">
+              <div className="text-7xl mb-4 drop-shadow-[0_0_30px_rgba(0,212,255,0.3)] group-hover:scale-110 transition-transform duration-500">
+                🚛
+              </div>
+              <CardTitle className="text-3xl font-bold text-white mb-2 tracking-tight">VEHÍCULOS</CardTitle>
+              <CardDescription className="text-[#B0B0D0] text-base leading-relaxed mb-6">
+                Gestión de vehículos, herramientas y mantenimiento. Administración del parque automotor.
+              </CardDescription>
+              <Button
+                className="btn-nebula"
+                onClick={(e) => { e.stopPropagation(); window.open('https://herramientas-five.vercel.app/login', '_blank', 'noopener,noreferrer'); }}
+              >
+                Abrir <ExternalLink className="h-4 w-4 ml-1 inline" />
               </Button>
             </div>
           </Card>
