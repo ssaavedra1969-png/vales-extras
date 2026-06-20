@@ -28,21 +28,17 @@ export function parseExcelFile(buffer: ArrayBuffer): {
 
     const errores: string[] = [];
 
-    if (!legajo) {
-      errores.push('Legajo vacío');
-    }
-
     if (!empleado) {
       errores.push('Nombre vacío');
     }
 
     let monto = 0;
     if (montoRaw === undefined || montoRaw === null || montoRaw === '') {
-      errores.push('Monto vacío');
+      continue;
     } else {
       monto = parseFloat(String(montoRaw).replace(',', '.'));
       if (isNaN(monto) || monto <= 0) {
-        errores.push('Monto inválido o negativo');
+        continue;
       }
     }
 

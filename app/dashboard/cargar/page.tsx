@@ -195,7 +195,7 @@ export default function CargarPage() {
         <CardHeader>
           <CardTitle className="text-lg">Seleccionar archivo</CardTitle>
           <CardDescription>
-            El archivo debe tener 4 columnas: Legajo, Nombre, Monto, Fecha de pago (dd/mm/yyyy)
+            El archivo debe tener 4 columnas: Legajo (opcional), Nombre, Monto, Fecha de pago (dd/mm/yyyy)
           </CardDescription>
         </CardHeader>
         <CardContent>
