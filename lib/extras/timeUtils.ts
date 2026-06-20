@@ -60,7 +60,6 @@ export const DAYS_OF_WEEK = [
   'thursday',
   'friday',
   'saturday',
-  'sunday',
 ] as const;
 
 export const DAY_LABELS: Record<string, string> = {

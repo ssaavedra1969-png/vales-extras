@@ -46,7 +46,7 @@ export default function ExtrasPage() {
       for (const emp of emps) {
         initEntries[emp.id] = {};
         for (const day of emp.workingDays) {
-          initEntries[emp.id][day] = { actualStart: '', actualEnd: '' };
+          initEntries[emp.id][day] = { actualStart: emp.scheduledStart, actualEnd: emp.scheduledEnd };
         }
         initCalc[emp.id] = { actualStart: '', actualEnd: '', scheduledStart: emp.scheduledStart, scheduledEnd: emp.scheduledEnd, overtimeHours: 0, regularHours: 0, totalHours: 0 };
 
@@ -177,10 +177,6 @@ export default function ExtrasPage() {
     setWeekStart(d);
   };
 
-  const getDayColumns = (emp: ExtraEmployee) => {
-    return DAYS_OF_WEEK.filter((d) => emp.workingDays.includes(d));
-  };
-
   return (
     <div className="space-y-6">
       <div>
@@ -260,7 +256,6 @@ export default function ExtrasPage() {
                 </TableHeader>
                 <TableBody>
                   {employees.map((emp) => {
-                    const dayColumns = getDayColumns(emp);
                     const totalExtra = previewOvertime(emp.id);
 
                     return (
