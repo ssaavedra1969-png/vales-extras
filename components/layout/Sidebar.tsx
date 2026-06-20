@@ -46,7 +46,7 @@ export default function Sidebar() {
               <LayoutDashboard className="h-5 w-5 text-primary" />
             </div>
             <div>
-              <h2 className="font-bold text-lg leading-tight">RRHH</h2>
+              <h2 className="font-bold text-lg leading-tight">ADMINISTRACION</h2>
               <p className="text-xs text-primary-foreground/60">
                 FALPAT SRL
               </p>

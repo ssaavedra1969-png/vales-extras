@@ -24,7 +24,7 @@ function MobileNav() {
             <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
               <FileText className="h-4 w-4 text-primary" />
             </div>
-            <h2 className="font-bold text-lg">RRHH - FALPAT SRL</h2>
+            <h2 className="font-bold text-lg">ADMINISTRACION - FALPAT SRL</h2>
           </div>
           <nav className="space-y-1">
             <p className="text-xs font-semibold text-muted-foreground uppercase px-4 mb-1 mt-4">VALES</p>

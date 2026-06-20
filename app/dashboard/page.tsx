@@ -15,7 +15,7 @@ export default function DashboardHome() {
         <div className="w-16 h-16 bg-accent rounded-2xl flex items-center justify-center mx-auto mb-4">
           <FileText className="h-8 w-8 text-primary" />
         </div>
-        <h1 className="text-3xl font-bold">RRHH de FALPAT SRL</h1>
+        <h1 className="text-3xl font-bold">ADMINISTRACION de FALPAT SRL</h1>
         <p className="text-muted-foreground max-w-md">
           Seleccioná el módulo al que querés acceder
         </p>
