@@ -1,8 +1,9 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Moon, Sun, Menu, FileText } from 'lucide-react';
+import { Moon, Sun, Menu, FileText, ArrowLeft } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 
@@ -20,12 +21,19 @@ function MobileNav() {
       </SheetTrigger>
       <SheetContent side="left" className="w-64">
         <div className="py-6">
-          <div className="flex items-center gap-3 px-4 mb-6">
+          <div className="flex items-center gap-3 px-4 mb-2">
             <div className="w-8 h-8 bg-accent rounded-lg flex items-center justify-center">
               <FileText className="h-4 w-4 text-primary" />
             </div>
-            <h2 className="font-bold text-lg">ADMINISTRACION - FALPAT SRL</h2>
+            <h2 className="font-bold text-lg">FALPAT SRL</h2>
           </div>
+          <a
+            href="/dashboard"
+            className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-foreground mb-4"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Volver al menú principal
+          </a>
           <nav className="space-y-1">
             <p className="text-xs font-semibold text-muted-foreground uppercase px-4 mb-1 mt-4">VALES</p>
             {[
@@ -48,7 +56,9 @@ function MobileNav() {
             ))}
             <p className="text-xs font-semibold text-muted-foreground uppercase px-4 mb-1 mt-4">EXTRAS</p>
             {[
-              { href: '/dashboard/extras', label: 'EXTRAS' },
+              { href: '/dashboard/extras', label: 'Carga Horaria' },
+              { href: '/dashboard/extras/employees', label: 'Empleados' },
+              { href: '/dashboard/extras/reports', label: 'Reportes' },
             ].map((item) => (
               <a
                 key={item.href}
@@ -94,6 +104,11 @@ export default function Header() {
       <MobileNav />
 
       <div className="hidden md:flex items-center gap-2">
+        <Link href="/dashboard">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" title="Volver al menú principal">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </Link>
         <div className="w-7 h-7 bg-accent rounded-md flex items-center justify-center">
           <FileText className="h-3.5 w-3.5 text-primary" />
         </div>

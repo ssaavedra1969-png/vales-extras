@@ -14,6 +14,8 @@ import {
   Settings,
   Gift,
   LayoutDashboard,
+  Users,
+  BarChart3,
 } from 'lucide-react';
 
 const menuGroups = [
@@ -29,7 +31,9 @@ const menuGroups = [
   {
     label: 'EXTRAS',
     items: [
-      { href: '/dashboard/extras', label: 'EXTRAS', icon: Gift },
+      { href: '/dashboard/extras', label: 'Carga Horaria', icon: Gift },
+      { href: '/dashboard/extras/employees', label: 'Empleados', icon: Users },
+      { href: '/dashboard/extras/reports', label: 'Reportes', icon: BarChart3 },
     ],
   },
 ];
