@@ -36,13 +36,16 @@ export function getWeekStartDate(date: Date = new Date()): Date {
 
 export function getWeekEndDate(weekStart: Date): Date {
   const d = new Date(weekStart);
-  d.setDate(d.getDate() + 6);
-  d.setHours(23, 59, 59, 999);
+  d.setDate(d.getDate() + 5);
+  d.setHours(0, 0, 0, 0);
   return d;
 }
 
 export function formatDateISO(date: Date): string {
-  return date.toISOString().split('T')[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  const d = String(date.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
 }
 
 export function formatDateArg(date: Date): string {
@@ -60,7 +63,6 @@ export const DAYS_OF_WEEK = [
   'thursday',
   'friday',
   'saturday',
-  'sunday',
 ] as const;
 
 export const DAY_LABELS: Record<string, string> = {
