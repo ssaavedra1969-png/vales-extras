@@ -250,11 +250,18 @@ export default function ExtrasPage() {
                     <TableRow>
                       <TableHead className="w-44">Empleado</TableHead>
                       <TableHead className="w-28">Programado</TableHead>
-                      {DAYS_OF_WEEK.map((day) => (
-                        <TableHead key={day} className="text-center min-w-[130px]">
-                          {DAY_LABELS[day]}
-                        </TableHead>
-                      ))}
+                      {DAYS_OF_WEEK.map((day, idx) => {
+                        const dayDate = new Date(weekStart);
+                        dayDate.setDate(dayDate.getDate() + idx);
+                        return (
+                          <TableHead key={day} className="text-center min-w-[130px]">
+                            <div className="text-xs font-bold text-white uppercase">{DAY_LABELS[day]}</div>
+                            <div className="text-[10px] text-[#6C3CE1] font-mono mt-0.5">
+                              {String(dayDate.getDate()).padStart(2, '0')}/{String(dayDate.getMonth() + 1).padStart(2, '0')}
+                            </div>
+                          </TableHead>
+                        );
+                      })}
                       <TableHead className="w-20 text-center">Total Extra</TableHead>
                     </TableRow>
                   </TableHeader>
