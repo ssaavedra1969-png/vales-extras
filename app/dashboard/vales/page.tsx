@@ -200,225 +200,231 @@ export default function ValesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">VALES</h1>
-        <p className="text-muted-foreground">Gestiona los vales pendientes y firmados</p>
+    <div className="space-y-6 relative z-10">
+      <div className="animate-fadeInUp">
+        <h1 className="text-2xl font-bold text-white">📋 VALES</h1>
+        <p className="text-[#B0B0D0]">Gestioná los vales pendientes y firmados</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Filtros</CardTitle>
-          <CardDescription>Filtra por empleado o estado</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="flex-1 min-w-[200px]">
-              <label className="text-xs text-muted-foreground mb-1 block">Buscar empleado</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Nombre del empleado..."
-                  value={searchEmpleado}
-                  onChange={(e) => setSearchEmpleado(e.target.value)}
-                  onKeyDown={(e) => e.key === 'Enter' && buscar()}
-                  className="pl-9"
-                />
+      <div className="animate-fadeInUp stagger-1">
+        <Card className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]">
+          <CardHeader>
+            <CardTitle className="text-white text-lg">🔍 Filtros</CardTitle>
+            <CardDescription className="text-[#B0B0D0]">Filtrá por empleado o estado</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="flex-1 min-w-[200px]">
+                <label className="text-xs text-[#6B6B8A] mb-1 block">Buscar empleado</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B6B8A]" />
+                  <input
+                    placeholder="Nombre del empleado..."
+                    value={searchEmpleado}
+                    onChange={(e) => setSearchEmpleado(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && buscar()}
+                    className="input-nebula pl-9"
+                  />
+                </div>
+              </div>
+              <div className="w-40">
+                <label className="text-xs text-[#6B6B8A] mb-1 block">Estado</label>
+                <Select value={filterEstado} onValueChange={setFilterEstado}>
+                  <SelectTrigger className="bg-[#1A1A3E]/80 border-white/10 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1A1A3E] border-white/10 text-white">
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="pendiente">Pendiente</SelectItem>
+                    <SelectItem value="firmado">Firmado</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <button onClick={buscar} className="btn-nebula">
+                <Search className="h-4 w-4 mr-2" /> Buscar
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="animate-fadeInUp stagger-2">
+        <Card className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]">
+          <CardHeader>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <CardTitle className="text-white text-lg">📄 Vales</CardTitle>
+                <CardDescription className="text-[#B0B0D0]">
+                  {vales.length} vales — {seleccionados.size} seleccionados
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  className="btn-nebula"
+                  onClick={confirmarSeleccionados}
+                  disabled={confirmando || seleccionados.size === 0}
+                >
+                  {confirmando ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Confirmando...</>
+                  ) : (
+                    <><CheckCircle2 className="h-4 w-4 mr-2" /> Confirmar seleccionados</>
+                  )}
+                </button>
               </div>
             </div>
-            <div className="w-40">
-              <label className="text-xs text-muted-foreground mb-1 block">Estado</label>
-              <Select value={filterEstado} onValueChange={setFilterEstado}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="todos">Todos</SelectItem>
-                  <SelectItem value="pendiente">Pendiente</SelectItem>
-                  <SelectItem value="firmado">Firmado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <Button onClick={buscar} className="gap-2">
-              <Search className="h-4 w-4" /> Buscar
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <CardTitle className="text-lg">Vales</CardTitle>
-              <CardDescription>
-                {vales.length} vales - {seleccionados.size} seleccionados
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="default"
-                onClick={confirmarSeleccionados}
-                disabled={confirmando || seleccionados.size === 0}
-              >
-                {confirmando ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Confirmando...</>
-                ) : (
-                  <><CheckCircle2 className="h-4 w-4 mr-2" /> Confirmar seleccionados</>
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {cargando ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : vales.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>No se encontraron vales</p>
-            </div>
-          ) : (
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10">
-                      <Checkbox
-                        checked={vales.length > 0 && seleccionados.size === vales.length}
-                        onCheckedChange={toggleTodos}
-                      />
-                    </TableHead>
-                    <TableHead>N° Vale</TableHead>
-                    <TableHead>Legajo</TableHead>
-                    <TableHead>Empleado</TableHead>
-                    <TableHead>Monto</TableHead>
-                    <TableHead>Fecha de pago</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="text-right">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {vales.map((vale) => (
-                    <TableRow
-                      key={vale.id}
-                      className={seleccionados.has(vale.id) ? 'bg-muted/50' : ''}
-                    >
-                      <TableCell>
+          </CardHeader>
+          <CardContent>
+            {cargando ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6C3CE1]" />
+              </div>
+            ) : vales.length === 0 ? (
+              <div className="text-center py-12 text-[#6B6B8A]">
+                <span className="text-4xl block mb-3">📭</span>
+                <p>No se encontraron vales</p>
+              </div>
+            ) : (
+              <div className="border border-white/10 rounded-xl overflow-hidden table-nebula">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10">
                         <Checkbox
-                          checked={seleccionados.has(vale.id)}
-                          onCheckedChange={() => toggleSeleccion(vale.id)}
+                          checked={vales.length > 0 && seleccionados.size === vales.length}
+                          onCheckedChange={toggleTodos}
+                          className="border-white/30"
                         />
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">{vale.numero}</TableCell>
-                      <TableCell className="font-mono text-xs">{vale.legajo}</TableCell>
-                      <TableCell className="font-medium">{vale.empleado}</TableCell>
-                      <TableCell>
-                        ${vale.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
-                      </TableCell>
-                      <TableCell>{vale.fechaPago}</TableCell>
-                      <TableCell>{estadoBadge(vale.estado)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => generarPDF(vale)}
-                            disabled={generandoPdf === vale.id}
-                          >
-                            {generandoPdf === vale.id ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <FileDown className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => abrirEdicion(vale)}
-                          >
-                            <Pencil className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setEliminarId(vale.id)}
-                          >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={async () => {
-                              try {
-                                await confirmarVale(vale.id);
-                                toast({
-                                  title: 'Vale confirmado',
-                                  description: `${vale.numero} enviado a Gestión de Descuentos`,
-                                  variant: 'success',
-                                });
-                                cargarVales();
-                              } catch {
-                                toast({ title: 'Error', description: 'No se pudo confirmar', variant: 'destructive' });
-                              }
-                            }}
-                          >
-                            <CheckCircle2 className="h-4 w-4 mr-1" /> Confirmar
-                          </Button>
-                        </div>
-                      </TableCell>
+                      </TableHead>
+                      <TableHead>N° Vale</TableHead>
+                      <TableHead>Legajo</TableHead>
+                      <TableHead>Empleado</TableHead>
+                      <TableHead>Monto</TableHead>
+                      <TableHead>Fecha de pago</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {vales.map((vale) => (
+                      <TableRow
+                        key={vale.id}
+                        className={`border-t border-white/5 ${seleccionados.has(vale.id) ? 'bg-[#6C3CE1]/10' : ''}`}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={seleccionados.has(vale.id)}
+                            onCheckedChange={() => toggleSeleccion(vale.id)}
+                            className="border-white/30"
+                          />
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-[#B0B0D0]">{vale.numero}</TableCell>
+                        <TableCell className="font-mono text-xs text-[#B0B0D0]">{vale.legajo}</TableCell>
+                        <TableCell className="font-medium text-white">{vale.empleado}</TableCell>
+                        <TableCell className="text-[#00D4FF] font-mono">
+                          ${vale.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="text-[#B0B0D0]">{vale.fechaPago}</TableCell>
+                        <TableCell>{estadoBadge(vale.estado)}</TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-1">
+                            <button
+                              className="bg-white/5 hover:bg-white/10 text-white rounded-lg p-2 transition-all"
+                              onClick={() => generarPDF(vale)}
+                              disabled={generandoPdf === vale.id}
+                              title="Descargar PDF"
+                            >
+                              {generandoPdf === vale.id ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <FileDown className="h-4 w-4" />
+                              )}
+                            </button>
+                            <button
+                              className="bg-white/5 hover:bg-white/10 text-white rounded-lg p-2 transition-all"
+                              onClick={() => abrirEdicion(vale)}
+                              title="Editar estado"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              className="bg-white/5 hover:bg-white/10 text-red-400 rounded-lg p-2 transition-all"
+                              onClick={() => setEliminarId(vale.id)}
+                              title="Eliminar"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                            <button
+                              className="bg-gradient-to-r from-[#6C3CE1]/20 to-[#00D4FF]/20 hover:from-[#6C3CE1]/40 hover:to-[#00D4FF]/40 text-white border border-white/10 rounded-lg px-3 py-2 text-xs font-medium transition-all flex items-center gap-1"
+                              onClick={async () => {
+                                try {
+                                  await confirmarVale(vale.id);
+                                  toast({
+                                    title: 'Vale confirmado',
+                                    description: `${vale.numero} enviado a Gestión de Descuentos`,
+                                    variant: 'success',
+                                  });
+                                  cargarVales();
+                                } catch {
+                                  toast({ title: 'Error', description: 'No se pudo confirmar', variant: 'destructive' });
+                                }
+                              }}
+                            >
+                              <CheckCircle2 className="h-3 w-3" /> Confirmar
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent>
+        <DialogContent className="bg-[#1A1A3E] border border-white/10 text-white">
           <DialogHeader>
-            <DialogTitle>Editar estado del vale</DialogTitle>
-            <DialogDescription>
-              Vale: {valeEditando?.numero} - {valeEditando?.empleado}
+            <DialogTitle className="text-white">✏️ Editar estado del vale</DialogTitle>
+            <DialogDescription className="text-[#B0B0D0]">
+              Vale: {valeEditando?.numero} — {valeEditando?.empleado}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <label className="text-sm font-medium mb-2 block">Nuevo estado</label>
+            <label className="text-sm font-medium text-white mb-2 block">Nuevo estado</label>
             <Select value={nuevoEstado} onValueChange={setNuevoEstado}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-[#0A0A1A]/80 border-white/10 text-white">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-[#0A0A1A] border-white/10 text-white">
                 <SelectItem value="pendiente">Pendiente</SelectItem>
                 <SelectItem value="firmado">Firmado</SelectItem>
               </SelectContent>
             </Select>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
-            <Button onClick={confirmarCambioEstado} disabled={cambiandoEstado}>
+            <button onClick={() => setDialogOpen(false)} className="bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl px-4 py-2 text-sm font-medium transition-all">Cancelar</button>
+            <button onClick={confirmarCambioEstado} disabled={cambiandoEstado} className="btn-nebula">
               {cambiandoEstado ? 'Guardando...' : 'Guardar'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={eliminarId !== null} onOpenChange={(open) => !open && setEliminarId(null)}>
-        <DialogContent>
+        <DialogContent className="bg-[#1A1A3E] border border-white/10 text-white">
           <DialogHeader>
-            <DialogTitle>Eliminar vale</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-white">🗑️ Eliminar vale</DialogTitle>
+            <DialogDescription className="text-[#B0B0D0]">
               ¿Estás seguro? Esta acción no se puede deshacer.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEliminarId(null)}>Cancelar</Button>
-            <Button variant="destructive" onClick={confirmarEliminar} disabled={eliminando}>
+            <button onClick={() => setEliminarId(null)} className="bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl px-4 py-2 text-sm font-medium transition-all">Cancelar</button>
+            <button onClick={confirmarEliminar} disabled={eliminando} className="bg-red-500/20 hover:bg-red-500/40 text-red-400 border border-red-500/30 rounded-xl px-4 py-2 text-sm font-medium transition-all flex items-center gap-2">
               {eliminando ? 'Eliminando...' : 'Eliminar'}
-            </Button>
+            </button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

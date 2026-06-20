@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Save, Calendar, Clock, Calculator, BadgeCheck } from 'lucide-react';
+import { Loader2, Save, Calendar, Clock, BadgeCheck } from 'lucide-react';
 import { ExtraEmployee, WeeklyTimesheet, ExtraDay } from '@/types/extras';
 import { getActiveEmployees, getWeeklyTimesheet, saveWeeklyTimesheet, addAuditLog } from '@/lib/extras/firestore';
 import { getWeekStartDate, getWeekEndDate, DAYS_OF_WEEK, DAY_LABELS, DAY_LABELS_FULL, formatDateISO, formatDecimalToHours } from '@/lib/extras/timeUtils';
@@ -178,158 +178,163 @@ export default function ExtrasPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Carga Horaria Semanal</h1>
-        <p className="text-muted-foreground">Ingresá las horas reales trabajadas para calcular extras</p>
+    <div className="space-y-6 relative z-10">
+      <div className="animate-fadeInUp">
+        <h1 className="text-2xl font-bold text-white">Carga Horaria Semanal</h1>
+        <p className="text-[#B0B0D0]">Ingresá las horas reales trabajadas para calcular extras</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Seleccionar semana</CardTitle>
-          <CardDescription>{weekLabel}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3 items-center">
-            <Button variant="outline" size="sm" onClick={() => cambiarSemana(-1)}>
-              ← Semana anterior
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => setWeekStart(getWeekStartDate(new Date()))}>
-              Semana actual
-            </Button>
-            <Button variant="outline" size="sm" onClick={() => cambiarSemana(1)}>
-              Semana siguiente →
-            </Button>
-            <Button variant="default" size="sm" onClick={cargarSemana} disabled={cargando}>
-              <Calendar className="h-4 w-4 mr-1" /> Cargar
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <CardTitle className="text-lg">Planilla semanal</CardTitle>
-              <CardDescription>
-                {employees.length} empleados activos
-              </CardDescription>
+      <div className="animate-fadeInUp stagger-1">
+        <Card className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]">
+          <CardHeader>
+            <CardTitle className="text-white text-lg">Seleccionar semana</CardTitle>
+            <CardDescription className="text-[#B0B0D0]">{weekLabel}</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3 items-center">
+              <Button variant="outline" size="sm" onClick={() => cambiarSemana(-1)} className="bg-white/5 border-white/10 text-[#B0B0D0] hover:bg-white/10 hover:text-white rounded-xl">
+                ← Semana anterior
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setWeekStart(getWeekStartDate(new Date()))} className="bg-white/5 border-white/10 text-[#B0B0D0] hover:bg-white/10 hover:text-white rounded-xl">
+                Semana actual
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => cambiarSemana(1)} className="bg-white/5 border-white/10 text-[#B0B0D0] hover:bg-white/10 hover:text-white rounded-xl">
+                Semana siguiente →
+              </Button>
+              <Button variant="default" size="sm" onClick={cargarSemana} disabled={cargando} className="btn-nebula text-sm !py-1.5 !px-4">
+                <Calendar className="h-4 w-4 mr-1" /> Cargar
+              </Button>
             </div>
-            <Button
-              variant="default"
-              onClick={guardarSemana}
-              disabled={guardando || employees.length === 0}
-            >
-              {guardando ? (
-                <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
-              ) : (
-                <><Save className="h-4 w-4 mr-2" /> GUARDAR SEMANA</>
-              )}
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="overflow-x-auto">
-          {cargando ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="animate-fadeInUp stagger-2">
+        <Card className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]">
+          <CardHeader>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <CardTitle className="text-white text-lg">Planilla semanal</CardTitle>
+                <CardDescription className="text-[#6B6B8A]">
+                  {employees.length} empleados activos
+                </CardDescription>
+              </div>
+              <Button
+                variant="default"
+                onClick={guardarSemana}
+                disabled={guardando || employees.length === 0}
+                className="btn-nebula text-sm !py-2 !px-6"
+              >
+                {guardando ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Guardando...</>
+                ) : (
+                  <><Save className="h-4 w-4 mr-2" /> GUARDAR SEMANA</>
+                )}
+              </Button>
             </div>
-          ) : employees.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>No hay empleados activos</p>
-              <p className="text-sm">Agregá empleados desde la sección Empleados</p>
-            </div>
-          ) : (
-            <div className="min-w-[900px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-44">Empleado</TableHead>
-                    <TableHead className="w-28">Programado</TableHead>
-                    {DAYS_OF_WEEK.map((day) => (
-                      <TableHead key={day} className="text-center min-w-[130px]">
-                        {DAY_LABELS[day]}
-                      </TableHead>
-                    ))}
-                    <TableHead className="w-20 text-center">Total Extra</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {employees.map((emp) => {
-                    const totalExtra = previewOvertime(emp.id);
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            {cargando ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6C3CE1]" />
+              </div>
+            ) : employees.length === 0 ? (
+              <div className="text-center py-12">
+                <p className="text-[#B0B0D0]">No hay empleados activos</p>
+                <p className="text-sm text-[#6B6B8A]">Agregá empleados desde la sección Empleados</p>
+              </div>
+            ) : (
+              <div className="min-w-[900px] border border-white/5 rounded-xl overflow-hidden">
+                <Table className="table-nebula">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-44">Empleado</TableHead>
+                      <TableHead className="w-28">Programado</TableHead>
+                      {DAYS_OF_WEEK.map((day) => (
+                        <TableHead key={day} className="text-center min-w-[130px]">
+                          {DAY_LABELS[day]}
+                        </TableHead>
+                      ))}
+                      <TableHead className="w-20 text-center">Total Extra</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {employees.map((emp) => {
+                      const totalExtra = previewOvertime(emp.id);
 
-                    return (
-                      <TableRow key={emp.id} className={savedWeeks[emp.id] ? 'bg-green-50/50 dark:bg-green-950/20' : ''}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-1">
-                            {savedWeeks[emp.id] && <BadgeCheck className="h-3.5 w-3.5 text-green-600 shrink-0" />}
-                            <span className="truncate">{emp.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-xs font-mono whitespace-nowrap">
-                          <Clock className="h-3 w-3 inline mr-1" />
-                          {emp.scheduledStart} - {emp.scheduledEnd}
-                        </TableCell>
-                        {DAYS_OF_WEEK.map((day) => {
-                          const isWorkingDay = emp.workingDays.includes(day);
-                          const entry = entries[emp.id]?.[day];
+                      return (
+                        <TableRow key={emp.id} className={savedWeeks[emp.id] ? 'bg-[#00E676]/5' : ''}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-1">
+                              {savedWeeks[emp.id] && <BadgeCheck className="h-3.5 w-3.5 text-[#00E676] shrink-0" />}
+                              <span className="truncate text-white">{emp.name}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs font-mono whitespace-nowrap text-[#B0B0D0]">
+                            <Clock className="h-3 w-3 inline mr-1 text-[#6B6B8A]" />
+                            {emp.scheduledStart} - {emp.scheduledEnd}
+                          </TableCell>
+                          {DAYS_OF_WEEK.map((day) => {
+                            const isWorkingDay = emp.workingDays.includes(day);
+                            const entry = entries[emp.id]?.[day];
 
-                          if (!isWorkingDay) {
-                            return <TableCell key={day} className="text-muted-foreground text-xs text-center">—</TableCell>;
-                          }
+                            if (!isWorkingDay) {
+                              return <TableCell key={day} className="text-[#6B6B8A] text-xs text-center">—</TableCell>;
+                            }
 
-                          const result = calculateDailyOvertime(
-                            emp.scheduledStart,
-                            emp.scheduledEnd,
-                            entry?.actualStart || '',
-                            entry?.actualEnd || ''
-                          );
+                            const result = calculateDailyOvertime(
+                              emp.scheduledStart,
+                              emp.scheduledEnd,
+                              entry?.actualStart || '',
+                              entry?.actualEnd || ''
+                            );
 
-                          return (
-                            <TableCell key={day} className="p-1">
-                              <div className="flex flex-col gap-0.5">
-                                <div className="flex gap-0.5">
-                                  <Input
-                                    placeholder="Entrada"
-                                    value={entry?.actualStart || ''}
-                                    onChange={(e) => updateEntry(emp.id, day, 'actualStart', e.target.value)}
-                                    className="h-7 text-xs w-[58px] px-1"
-                                  />
-                                  <Input
-                                    placeholder="Salida"
-                                    value={entry?.actualEnd || ''}
-                                    onChange={(e) => updateEntry(emp.id, day, 'actualEnd', e.target.value)}
-                                    className="h-7 text-xs w-[58px] px-1"
-                                  />
-                                </div>
-                                {result.totalHours > 0 && (
-                                  <div className="flex gap-1 text-[10px]">
-                                    <span className="text-muted-foreground">{formatDecimalToHours(result.totalHours)}h</span>
-                                    {result.overtimeHours > 0 && (
-                                      <span className="text-accent font-semibold">+{formatDecimalToHours(result.overtimeHours)}</span>
-                                    )}
+                            return (
+                              <TableCell key={day} className="p-1">
+                                <div className="flex flex-col gap-0.5 items-center">
+                                  <div className="flex gap-0.5">
+                                    <Input
+                                      placeholder="Entrada"
+                                      value={entry?.actualStart || ''}
+                                      onChange={(e) => updateEntry(emp.id, day, 'actualStart', e.target.value)}
+                                      className="h-7 text-xs w-[58px] px-1 input-nebula"
+                                    />
+                                    <Input
+                                      placeholder="Salida"
+                                      value={entry?.actualEnd || ''}
+                                      onChange={(e) => updateEntry(emp.id, day, 'actualEnd', e.target.value)}
+                                      className="h-7 text-xs w-[58px] px-1 input-nebula"
+                                    />
                                   </div>
-                                )}
-                              </div>
-                            </TableCell>
-                          );
-                        })}
-                        <TableCell className="text-center font-semibold">
-                          {totalExtra !== null && totalExtra > 0 ? (
-                            <span className="text-accent">{formatDecimalToHours(totalExtra)}</span>
-                          ) : (
-                            <span className="text-muted-foreground text-xs">—</span>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                                  {result.totalHours > 0 && (
+                                    <div className="flex gap-1 text-[10px]">
+                                      <span className="text-[#6B6B8A]">{formatDecimalToHours(result.totalHours)}h</span>
+                                      {result.overtimeHours > 0 && (
+                                        <span className="text-[#00D4FF] font-semibold">+{formatDecimalToHours(result.overtimeHours)}</span>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                            );
+                          })}
+                          <TableCell className="text-center font-semibold">
+                            {totalExtra !== null && totalExtra > 0 ? (
+                              <span className="text-[#00D4FF]">{formatDecimalToHours(totalExtra)}</span>
+                            ) : (
+                              <span className="text-[#6B6B8A] text-xs">—</span>
+                            )}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

@@ -42,29 +42,27 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="hidden md:flex md:w-64 flex-col bg-primary text-primary-foreground">
+    <aside className="hidden md:flex md:w-64 flex-col bg-[#0A0A1A]/95 border-r border-white/5">
       <div className="p-6">
         <Link href="/dashboard">
           <div className="flex items-center gap-3 mb-2 cursor-pointer hover:opacity-80 transition-opacity">
-            <div className="w-10 h-10 bg-accent rounded-lg flex items-center justify-center">
-              <LayoutDashboard className="h-5 w-5 text-primary" />
+            <div className="w-10 h-10 bg-gradient-to-br from-[#6C3CE1] to-[#00D4FF] rounded-xl flex items-center justify-center shadow-lg shadow-[#6C3CE1]/20">
+              <LayoutDashboard className="h-5 w-5 text-white" />
             </div>
             <div>
-              <h2 className="font-bold text-lg leading-tight">ADMINISTRACION</h2>
-              <p className="text-xs text-primary-foreground/60">
-                FALPAT SRL
-              </p>
+              <h2 className="font-bold text-lg leading-tight text-white">FALPAT SRL</h2>
+              <p className="text-xs text-[#6B6B8A]">Administración</p>
             </div>
           </div>
         </Link>
       </div>
 
-      <Separator className="bg-primary-foreground/10" />
+      <Separator className="bg-white/5" />
 
       <nav className="flex-1 p-4 space-y-4 overflow-y-auto">
         {menuGroups.map((group) => (
           <div key={group.label}>
-            <p className="text-xs font-semibold text-primary-foreground/40 uppercase tracking-wider px-3 mb-1">
+            <p className="text-xs font-semibold text-[#6B6B8A] uppercase tracking-wider px-3 mb-1">
               {group.label}
             </p>
             <div className="space-y-0.5">
@@ -73,17 +71,17 @@ export default function Sidebar() {
                 const Icon = item.icon;
                 return (
                   <Link key={item.href} href={item.href}>
-                    <Button
-                      variant="ghost"
+                    <div
                       className={cn(
-                        'w-full justify-start gap-3 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10',
-                        isActive &&
-                          'bg-primary-foreground/15 text-primary-foreground font-medium'
+                        'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 cursor-pointer',
+                        isActive
+                          ? 'bg-gradient-to-r from-[#6C3CE1]/20 to-transparent text-white font-medium border-l-2 border-[#6C3CE1]'
+                          : 'text-[#B0B0D0] hover:text-white hover:bg-white/5'
                       )}
                     >
-                      <Icon className="h-4 w-4 shrink-0" />
+                      <Icon className={cn('h-4 w-4 shrink-0', isActive && 'text-[#6C3CE1]')} />
                       <span className="truncate">{item.label}</span>
-                    </Button>
+                    </div>
                   </Link>
                 );
               })}
@@ -92,19 +90,19 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="p-4 space-y-1 border-t border-primary-foreground/10">
+      <div className="p-4 space-y-1 border-t border-white/5">
         <Link href="/dashboard/configuracion">
-          <Button
-            variant="ghost"
+          <div
             className={cn(
-              'w-full justify-start gap-3 text-primary-foreground/80 hover:text-primary-foreground hover:bg-primary-foreground/10',
-              pathname === '/dashboard/configuracion' &&
-                'bg-primary-foreground/15 text-primary-foreground font-medium'
+              'flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-all duration-200 cursor-pointer',
+              pathname === '/dashboard/configuracion'
+                ? 'bg-gradient-to-r from-[#6C3CE1]/20 to-transparent text-white font-medium border-l-2 border-[#6C3CE1]'
+                : 'text-[#B0B0D0] hover:text-white hover:bg-white/5'
             )}
           >
-            <Settings className="h-4 w-4" />
+            <Settings className="h-4 w-4 shrink-0" />
             Configuración
-          </Button>
+          </div>
         </Link>
       </div>
     </aside>

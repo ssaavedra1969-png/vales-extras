@@ -151,128 +151,135 @@ export default function DescuentosPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Gestión de Descuentos</h1>
-        <p className="text-muted-foreground">Selecciona vales confirmados y marcalos como descontados</p>
+    <div className="space-y-6 relative z-10">
+      <div className="animate-fadeInUp">
+        <h1 className="text-2xl font-bold text-white">💰 Gestión de Descuentos</h1>
+        <p className="text-[#B0B0D0]">Seleccioná vales confirmados y marcalos como descontados</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Seleccionar período</CardTitle>
-          <CardDescription>Elige el mes para filtrar los vales confirmados</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-3 items-end">
-            <div className="w-64">
-              <select
-                value={mes}
-                onChange={(e) => setMes(e.target.value)}
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-              >
-                {meses.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <Button variant="outline" onClick={cargarVales} disabled={cargando}>
-              {cargando ? 'Cargando...' : 'Actualizar'}
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between flex-wrap gap-2">
-            <div>
-              <CardTitle className="text-lg">Vales confirmados</CardTitle>
-              <CardDescription>
-                {vales.length} vales encontrados - {seleccionados.size} seleccionados
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="default"
-                onClick={descontarSeleccionados}
-                disabled={descontando || seleccionados.size === 0}
-              >
-                {descontando ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Aplicando...</>
-                ) : (
-                  <><CheckCircle2 className="h-4 w-4 mr-2" /> Descontar seleccionados</>
-                )}
-              </Button>
-              <Button
-                variant="accent"
-                onClick={exportarExcel}
-                disabled={exportando || vales.length === 0}
-              >
-                {exportando ? (
-                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Exportando...</>
-                ) : (
-                  <><Download className="h-4 w-4 mr-2" /> Exportar Excel</>
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {cargando ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            </div>
-          ) : vales.length === 0 ? (
-            <div className="text-center py-12 text-muted-foreground">
-              <p>No hay vales confirmados para este período</p>
-            </div>
-          ) : (
-            <div className="border rounded-lg overflow-hidden">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10">
-                      <Checkbox
-                        checked={vales.length > 0 && seleccionados.size === vales.length}
-                        onCheckedChange={toggleTodos}
-                      />
-                    </TableHead>
-                    <TableHead>N° Vale</TableHead>
-                    <TableHead>Legajo</TableHead>
-                    <TableHead>Empleado</TableHead>
-                    <TableHead>Monto</TableHead>
-                    <TableHead>Fecha de pago</TableHead>
-                    <TableHead>Estado</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {vales.map((vale) => (
-                    <TableRow
-                      key={vale.id}
-                      className={seleccionados.has(vale.id) ? 'bg-muted/50' : ''}
-                    >
-                      <TableCell>
-                        <Checkbox
-                          checked={seleccionados.has(vale.id)}
-                          onCheckedChange={() => toggleSeleccion(vale.id)}
-                        />
-                      </TableCell>
-                      <TableCell className="font-mono text-xs">{vale.numero}</TableCell>
-                      <TableCell className="font-mono text-xs">{vale.legajo}</TableCell>
-                      <TableCell className="font-medium">{vale.empleado}</TableCell>
-                      <TableCell>${vale.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</TableCell>
-                      <TableCell>{vale.fechaPago}</TableCell>
-                      <TableCell><Badge variant="warning">Confirmado</Badge></TableCell>
-                    </TableRow>
+      <div className="animate-fadeInUp stagger-1">
+        <Card className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]">
+          <CardHeader>
+            <CardTitle className="text-white text-lg">📅 Seleccionar período</CardTitle>
+            <CardDescription className="text-[#B0B0D0]">Elegí el mes para filtrar los vales confirmados</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-3 items-end">
+              <div className="w-64">
+                <select
+                  value={mes}
+                  onChange={(e) => setMes(e.target.value)}
+                  className="input-nebula"
+                >
+                  {meses.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.label}
+                    </option>
                   ))}
-                </TableBody>
-              </Table>
+                </select>
+              </div>
+              <button onClick={cargarVales} disabled={cargando} className="bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300">
+                {cargando ? 'Cargando...' : 'Actualizar'}
+              </button>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="animate-fadeInUp stagger-2">
+        <Card className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]">
+          <CardHeader>
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <div>
+                <CardTitle className="text-white text-lg">📋 Vales confirmados</CardTitle>
+                <CardDescription className="text-[#B0B0D0]">
+                  {vales.length} vales encontrados — {seleccionados.size} seleccionados
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  className="btn-nebula"
+                  onClick={descontarSeleccionados}
+                  disabled={descontando || seleccionados.size === 0}
+                >
+                  {descontando ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Aplicando...</>
+                  ) : (
+                    <><CheckCircle2 className="h-4 w-4 mr-2" /> Descontar seleccionados</>
+                  )}
+                </button>
+                <button
+                  className="bg-gradient-to-r from-[#6C3CE1]/20 to-[#00D4FF]/20 hover:from-[#6C3CE1]/40 hover:to-[#00D4FF]/40 text-white border border-white/10 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 flex items-center"
+                  onClick={exportarExcel}
+                  disabled={exportando || vales.length === 0}
+                >
+                  {exportando ? (
+                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Exportando...</>
+                  ) : (
+                    <><Download className="h-4 w-4 mr-2" /> Exportar Excel</>
+                  )}
+                </button>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {cargando ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-[#6C3CE1]" />
+              </div>
+            ) : vales.length === 0 ? (
+              <div className="text-center py-12 text-[#6B6B8A]">
+                <span className="text-4xl block mb-3">📭</span>
+                <p>No hay vales confirmados para este período</p>
+              </div>
+            ) : (
+              <div className="border border-white/10 rounded-xl overflow-hidden table-nebula">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={vales.length > 0 && seleccionados.size === vales.length}
+                          onCheckedChange={toggleTodos}
+                          className="border-white/30"
+                        />
+                      </TableHead>
+                      <TableHead>N° Vale</TableHead>
+                      <TableHead>Legajo</TableHead>
+                      <TableHead>Empleado</TableHead>
+                      <TableHead>Monto</TableHead>
+                      <TableHead>Fecha de pago</TableHead>
+                      <TableHead>Estado</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {vales.map((vale) => (
+                      <TableRow
+                        key={vale.id}
+                        className={`border-t border-white/5 ${seleccionados.has(vale.id) ? 'bg-[#6C3CE1]/10' : ''}`}
+                      >
+                        <TableCell>
+                          <Checkbox
+                            checked={seleccionados.has(vale.id)}
+                            onCheckedChange={() => toggleSeleccion(vale.id)}
+                            className="border-white/30"
+                          />
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-[#B0B0D0]">{vale.numero}</TableCell>
+                        <TableCell className="font-mono text-xs text-[#B0B0D0]">{vale.legajo}</TableCell>
+                        <TableCell className="font-medium text-white">{vale.empleado}</TableCell>
+                        <TableCell className="text-[#00D4FF] font-mono">${vale.monto.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</TableCell>
+                        <TableCell className="text-[#B0B0D0]">{vale.fechaPago}</TableCell>
+                        <TableCell><Badge variant="warning" className="bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">Confirmado</Badge></TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

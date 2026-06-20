@@ -185,154 +185,166 @@ export default function CargarPage() {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold">Cargar Excel</h1>
-        <p className="text-muted-foreground">Sube un archivo .xlsx o .xls con los datos de los vales</p>
+    <div className="space-y-6 relative z-10">
+      <div className="animate-fadeInUp">
+        <h1 className="text-2xl font-bold text-white">Cargar Excel</h1>
+        <p className="text-[#B0B0D0]">Subí un archivo .xlsx o .xls con los datos de los vales</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Seleccionar archivo</CardTitle>
-          <CardDescription>
-            El archivo debe tener 4 columnas: Legajo (opcional), Nombre, Monto, Fecha de pago (dd/mm/yyyy)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div
-            {...getRootProps()}
-            className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
-              isDragActive
-                ? 'border-accent bg-accent/5'
-                : 'border-muted-foreground/25 hover:border-accent/50'
-            }`}
-          >
-            <input {...getInputProps()} />
-            <FileSpreadsheet className="h-10 w-10 mx-auto mb-4 text-muted-foreground" />
-            {isDragActive ? (
-              <p className="text-accent font-medium">Suelta el archivo aquí...</p>
-            ) : (
-              <div>
-                <p className="text-muted-foreground mb-1">Arrastra y suelta tu archivo Excel aquí</p>
-                <p className="text-xs text-muted-foreground/60">o haz clic para seleccionar</p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {(filasValidas.length > 0 || filasInvalidas.length > 0) && (
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
-            <div>
-              <CardTitle className="text-lg">Previsualización</CardTitle>
-              <CardDescription>
-                <span className="text-green-600 font-medium">{filasValidas.length} válidas</span>
-                {filasInvalidas.length > 0 && (
-                  <span className="text-red-600 font-medium ml-2">{filasInvalidas.length} con errores</span>
-                )}
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              {valesCreados.length === 0 && (
-                <Button onClick={handleUpload} disabled={cargando || filasValidas.length === 0}>
-                  {cargando ? (
-                    <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Procesando...</>
-                  ) : (
-                    <><Upload className="h-4 w-4 mr-2" /> Confirmar carga</>
-                  )}
-                </Button>
-              )}
-              {valesCreados.length > 0 && (
-                <Button variant="accent" disabled>
-                  <Download className="h-4 w-4 mr-2" /> ZIP descargado
-                </Button>
-              )}
-              <Button variant="outline" onClick={limpiar} disabled={cargando}>
-                <X className="h-4 w-4 mr-2" /> Limpiar
-              </Button>
-            </div>
+      <div className="animate-fadeInUp stagger-1">
+        <Card className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]">
+          <CardHeader>
+            <CardTitle className="text-white text-lg">Seleccionar archivo</CardTitle>
+            <CardDescription className="text-[#B0B0D0]">
+              El archivo debe tener 4 columnas: Legajo (opcional), Nombre, Monto, Fecha de pago (dd/mm/yyyy)
+            </CardDescription>
           </CardHeader>
           <CardContent>
-            {valesCreados.length > 0 && (
-              <div className="mb-4 p-3 bg-green-50 dark:bg-green-950 border border-green-200 dark:border-green-800 rounded-lg flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
-                <div className="text-sm text-green-800 dark:text-green-200">
-                  <strong>{valesCreados.length} vales creados.</strong> Los PDFs se descargaron en un ZIP.
-                  Podés ver los vales desde la sección <strong>VALES</strong>.
+            <div
+              {...getRootProps()}
+              className={`relative border-2 border-dashed rounded-3xl p-12 text-center cursor-pointer transition-all duration-500 ${
+                isDragActive
+                  ? 'border-[#00D4FF] bg-[#00D4FF]/5 shadow-[0_0_60px_rgba(0,212,255,0.2)]'
+                  : 'border-white/20 bg-white/5 hover:border-[#6C3CE1]/50 hover:shadow-[0_0_40px_rgba(108,60,225,0.1)]'
+              }`}
+            >
+              <input {...getInputProps()} />
+              <div className="text-8xl mb-6 animate-bounce-slow">📂</div>
+              {isDragActive ? (
+                <p className="text-[#00D4FF] text-xl font-medium">📥 Soltá el archivo aquí</p>
+              ) : (
+                <div>
+                  <p className="text-white text-xl font-medium mb-2">Arrastrá tu archivo Excel</p>
+                  <p className="text-[#6B6B8A] text-sm">o hacé clic para seleccionarlo</p>
                 </div>
-              </div>
-            )}
-
-            {filasValidas.length > 0 && (
-              <div className="mb-4">
-                <h4 className="text-sm font-medium mb-2">Filas válidas</h4>
-                <div className="border rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>#</TableHead>
-                        <TableHead>Legajo</TableHead>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Monto</TableHead>
-                        <TableHead>Fecha de pago</TableHead>
-                        {valesCreados.length > 0 && <TableHead>N° Vale</TableHead>}
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filasValidas.map((fila, idx) => (
-                        <TableRow key={idx}>
-                          <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
-                          <TableCell className="font-mono text-xs">{fila.legajo}</TableCell>
-                          <TableCell className="font-medium">{fila.empleado}</TableCell>
-                          <TableCell>${fila.monto.toFixed(2)}</TableCell>
-                          <TableCell>{fila.fechaPago}</TableCell>
-                          {valesCreados[idx] && (
-                            <TableCell className="font-mono text-xs">{valesCreados[idx].numero}</TableCell>
-                          )}
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
-
-            {filasInvalidas.length > 0 && (
-              <div>
-                <h4 className="text-sm font-medium text-red-600 mb-2 flex items-center gap-1">
-                  <AlertCircle className="h-4 w-4" /> Filas con errores
-                </h4>
-                <div className="border border-red-200 rounded-lg overflow-hidden">
-                  <Table>
-                    <TableHeader>
-                      <TableRow className="bg-red-50 dark:bg-red-950">
-                        <TableHead>#</TableHead>
-                        <TableHead>Legajo</TableHead>
-                        <TableHead>Nombre</TableHead>
-                        <TableHead>Monto</TableHead>
-                        <TableHead>Fecha</TableHead>
-                        <TableHead>Error</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filasInvalidas.map((fila, idx) => (
-                        <TableRow key={idx}>
-                          <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
-                          <TableCell>{fila.legajo || '-'}</TableCell>
-                          <TableCell>{fila.empleado || '(vacío)'}</TableCell>
-                          <TableCell>{fila.monto || '-'}</TableCell>
-                          <TableCell>{fila.fechaPago || '-'}</TableCell>
-                          <TableCell><Badge variant="destructive" className="text-xs">{fila.error}</Badge></TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
+              )}
+            </div>
           </CardContent>
         </Card>
+      </div>
+
+      {(filasValidas.length > 0 || filasInvalidas.length > 0) && (
+        <div className="animate-fadeInUp stagger-2">
+          <Card className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl shadow-[0_25px_50px_-12px_rgba(0,0,0,0.8)]">
+            <CardHeader className="flex flex-row items-center justify-between flex-wrap gap-2">
+              <div>
+                <CardTitle className="text-white text-lg flex items-center gap-2">
+                  🔍 Previsualización
+                </CardTitle>
+                <CardDescription className="text-[#B0B0D0]">
+                  <span className="text-green-400 font-medium">{filasValidas.length} válidas</span>
+                  {filasInvalidas.length > 0 && (
+                    <span className="text-red-400 font-medium ml-2">{filasInvalidas.length} con errores</span>
+                  )}
+                </CardDescription>
+              </div>
+              <div className="flex gap-2">
+                {valesCreados.length === 0 && (
+                  <button
+                    onClick={handleUpload}
+                    disabled={cargando || filasValidas.length === 0}
+                    className="btn-nebula"
+                  >
+                    {cargando ? (
+                      <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Procesando...</>
+                    ) : (
+                      <><Upload className="h-4 w-4 mr-2" /> Confirmar carga</>
+                    )}
+                  </button>
+                )}
+                {valesCreados.length > 0 && (
+                  <button className="btn-nebula opacity-60 cursor-not-allowed" disabled>
+                    <Download className="h-4 w-4 mr-2" /> ZIP descargado
+                  </button>
+                )}
+                <button onClick={limpiar} disabled={cargando} className="bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-xl px-4 py-2 text-sm font-medium transition-all duration-300 flex items-center">
+                  <X className="h-4 w-4 mr-2" /> Limpiar
+                </button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {valesCreados.length > 0 && (
+                <div className="mb-4 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/20 rounded-xl flex items-center gap-3 animate-fadeInUp">
+                  <span className="text-2xl">✅</span>
+                  <div className="text-sm text-green-300">
+                    <strong className="text-green-200">{valesCreados.length} vales creados.</strong> Los PDFs se descargaron en un ZIP.
+                    Podés ver los vales desde la sección <strong className="text-white">VALES</strong>.
+                  </div>
+                </div>
+              )}
+
+              {filasValidas.length > 0 && (
+                <div className="mb-4">
+                  <h4 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+                    <span className="text-green-400">✓</span> Filas válidas
+                  </h4>
+                  <div className="border border-white/10 rounded-xl overflow-hidden table-nebula">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>#</TableHead>
+                          <TableHead>Legajo</TableHead>
+                          <TableHead>Nombre</TableHead>
+                          <TableHead>Monto</TableHead>
+                          <TableHead>Fecha de pago</TableHead>
+                          {valesCreados.length > 0 && <TableHead>N° Vale</TableHead>}
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filasValidas.map((fila, idx) => (
+                          <TableRow key={idx} className="border-t border-white/5">
+                            <TableCell className="text-[#6B6B8A]">{idx + 1}</TableCell>
+                            <TableCell className="font-mono text-xs text-[#B0B0D0]">{fila.legajo}</TableCell>
+                            <TableCell className="font-medium text-white">{fila.empleado}</TableCell>
+                            <TableCell className="text-[#00D4FF] font-mono">${fila.monto.toFixed(2)}</TableCell>
+                            <TableCell className="text-[#B0B0D0]">{fila.fechaPago}</TableCell>
+                            {valesCreados[idx] && (
+                              <TableCell className="font-mono text-xs text-[#6C3CE1]">{valesCreados[idx].numero}</TableCell>
+                            )}
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+
+              {filasInvalidas.length > 0 && (
+                <div>
+                  <h4 className="text-sm font-medium text-red-400 mb-3 flex items-center gap-2">
+                    <AlertCircle className="h-4 w-4" /> Filas con errores
+                  </h4>
+                  <div className="border border-red-500/20 rounded-xl overflow-hidden table-nebula">
+                    <Table>
+                      <TableHeader>
+                        <TableRow className="bg-red-500/5">
+                          <TableHead>#</TableHead>
+                          <TableHead>Legajo</TableHead>
+                          <TableHead>Nombre</TableHead>
+                          <TableHead>Monto</TableHead>
+                          <TableHead>Fecha</TableHead>
+                          <TableHead>Error</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {filasInvalidas.map((fila, idx) => (
+                          <TableRow key={idx} className="border-t border-red-500/10">
+                            <TableCell className="text-[#6B6B8A]">{idx + 1}</TableCell>
+                            <TableCell className="text-[#B0B0D0]">{fila.legajo || '-'}</TableCell>
+                            <TableCell className="text-white">{fila.empleado || '(vacío)'}</TableCell>
+                            <TableCell className="text-[#B0B0D0]">{fila.monto || '-'}</TableCell>
+                            <TableCell className="text-[#B0B0D0]">{fila.fechaPago || '-'}</TableCell>
+                            <TableCell><span className="text-xs px-2 py-1 rounded-full bg-red-500/10 text-red-400 border border-red-500/20">{fila.error}</span></TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       )}
     </div>
   );
